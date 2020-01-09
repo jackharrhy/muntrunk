@@ -44,110 +44,137 @@ def grab_entire_resp():
             return db["entire_resp"]
 
 
-def default_parser(field):
-    field = field.strip()
-
-    if field == "":
-        return None
-
-    try:
-        return int(field)
-    except ValueError:
-        return field
-
-
-def bool_parser(field):
-    field = field.strip()
-    fields = field.split(" ")
-    if len(fields) == 1:
-        return bool(fields[0])
-    elif len(fields) == 2:
-        return [bool(fields[0]), bool(fields[1])]
-    else:
-        raise "found a boolean field with > 2 fields!"
-
-
-def ignore_parser(field):
-    return None
-
-
-def days_of_the_week_parser(field):
-    fields = field.strip().split(" ")
-    fields = [x for x in fields if x]
-    return fields
-
-
-def course_name_parser(field):
-    return {"subject": field[:4], "number": field[5:9], "name": field[10:].strip()}
-
-
-# TODO parse multiple instructors per course
-def instructor_parser(field):
-    parts = field.split(" - ")
-    if len(parts) != 2:
-        return None
-    else:
-        return {"type": parts[0], "name": parts[1]}
-
-
 class FieldParser:
-    def __init__(self, name, parse_function=default_parser):
+    def __init__(self, name, parse_function="default_parser"):
         self.name = name
-        self.parse = parse_function
+        self.parse_function = parse_function
 
 
-class CourseParser:
-    course_name_regex = re.compile("([A-Z]){4} \d{4}")
+class InvalidCourse(Exception):
+    pass
+
+
+known_garbage_lines = [
+    "                                                     *** DAYS ***  BEG  END          SCHED  ASSOC LAB/      WAIT PRE RESV       CRED BILL                                 ",
+    "                 COURSE               SEC CRN   SLOT M T W R F S U TIME TIME  ROOM   TYPE   LEC SECT   PHON LIST CHK LFTD ATTR   HR   HR  INSTRUCTOR                      ",
+    "                 ------               --- ----- ---- ------------- ---- ---- ------- -----  ---------- ---- ---- --- ---- ----- ---- ---- ----------                      ",
+]
+
+
+class Course(dict):
+    course_name_regex = re.compile("([A-Z]){4} (\d|[A-Z]){4}")
+    known_schedule_values = [
+        "LEC",
+        "SEM",
+        "HES",
+        "L&L",
+        "DST",
+        "WRK",
+        "IND",
+        "LAB",
+        "CLI",
+        "INT",
+        "REA",
+        "CEX",
+    ]
+
+    def default_parser(self, field):
+        field = field.strip()
+
+        if field == "":
+            return None
+
+        try:
+            return int(field)
+        except ValueError:
+            return field
+
+    def schedule_parser(self, field):
+        field = field.strip()
+        if field in self.known_schedule_values:
+            return field
+        else:
+            if not Course.course_name_regex.match(self.raw_course[:9]):
+                raise InvalidCourse(field)
+
+    def bool_parser(self, field):
+        field = field.strip()
+        if field == "":
+            return None
+        fields = field.split(" ")
+        if len(fields) == 1:
+            return bool(fields[0])
+        elif len(fields) == 2:
+            return [bool(fields[0]), bool(fields[1])]
+        else:
+            raise "found a boolean field with > 2 fields!"
+
+    def ignore_parser(self, field):
+        return None
+
+    def days_of_the_week_parser(self, field):
+        fields = field.strip().split(" ")
+        fields = [x for x in fields if x]
+        return fields
+
+    def course_name_parser(self, field):
+        if field.strip() == "":
+            return None
+
+        return {"subject": field[:4], "number": field[5:9], "name": field[10:].strip()}
+
+    # TODO parse multiple instructors per course
+    def instructor_parser(self, field):
+        parts = field.split(" - ")
+        if len(parts) != 2:
+            return None
+        else:
+            return {"type": parts[0], "name": parts[1]}
 
     index_map = {
-        0: FieldParser("course", course_name_parser),
+        0: FieldParser("course", "course_name_parser"),
         1: FieldParser("section"),
         2: FieldParser("crn"),
         3: FieldParser("slot"),
-        4: FieldParser("days", days_of_the_week_parser),
+        4: FieldParser("days", "days_of_the_week_parser"),
         5: FieldParser("begin"),
         6: FieldParser("end"),
-        7: FieldParser("room"), # TODO parse one char room names
-        8: FieldParser("schedType"),
+        7: FieldParser("room"),  # TODO parse one char room names
+        8: FieldParser("schedType", "schedule_parser"),
         9: FieldParser("labSection"),
-        10: FieldParser("phone", ignore_parser),
-        11: FieldParser("waitList", bool_parser),
-        12: FieldParser("preCheck", bool_parser),
+        10: FieldParser("phone", "ignore_parser"),
+        11: FieldParser("waitList", "bool_parser"),
+        12: FieldParser("preCheck", "bool_parser"),
         13: FieldParser("reserved"),
         14: FieldParser("attr"),
         15: FieldParser("creditHours"),
         16: FieldParser("billHours"),
-        17: FieldParser("instructor", instructor_parser),
+        17: FieldParser("instructor", "instructor_parser"),
     }
 
-    def __init__(self):
-        #        "                                                     *** DAYS ***  BEG  END          SCHED  ASSOC LAB/      WAIT PRE RESV       CRED BILL                                 "
-        #        "                 COURSE               SEC CRN   SLOT M T W R F S U TIME TIME  ROOM   TYPE   LEC SECT   PHON LIST CHK LFTD ATTR   HR   HR  INSTRUCTOR                      "
-        #        "                 ------               --- ----- ---- ------------- ---- ---- ------- -----  ---------- ---- ---- --- ---- ----- ---- ---- ----------                      "
+    def __init__(self, raw_course, *args, **kwargs):
+        super(Course, self).__init__(*args, **kwargs)
         legend = "------------------------------------- --- ----- ---- ------------- ---- ---- ------- ------ ---------- ---- ---- --- ---- ----- ---- ---- --------------------------------"
         sections = legend.split(" ")
+        self.raw_course = raw_course
         self.sections = list(map(lambda s: len(s), sections))
+        self.parse(raw_course)
 
     def parse(self, raw_course):
-        data = {}
         last = 0
         for index, section in enumerate(self.sections):
             location = last + section + 1
 
             current_data = raw_course[last:location]
 
-            cp = CourseParser.index_map[index]
-            parsed_data = cp.parse(current_data)
+            cp = Course.index_map[index]
+            parsed_data = getattr(self, cp.parse_function)(current_data)
 
             if parsed_data != None:
-                data[cp.name] = parsed_data
+                self[cp.name] = parsed_data
 
             last = location
             raw_course.replace(current_data, "")
-        return data
-
-
-course_parser = CourseParser()
 
 
 def parse_entire_list():
@@ -161,16 +188,30 @@ def parse_entire_list():
     contents = pre.split("Subject: ")
 
     for entry in contents:
-        content = list(map(lambda s: s.strip(), entry.split("\n")))
+        content = entry.split("\n")
         content = [x for x in content if x]
 
-        subject = content[0]
+        subject = content[0].strip()
+
+        # if subject != "Chemistry":
+        #    continue
+
         content.pop(0)
 
         for line in content:
-            if CourseParser.course_name_regex.match(line[:9]):
-                course = course_parser.parse(line)
-                data["courses"].append(course)
+            if Course.course_name_regex.match(line[:9]):
+                try:
+                    course = Course(line)
+                    data["courses"].append(course)
+                except InvalidCourse:
+                    pass
+                    # print("Invalid", line)
+            elif not line in known_garbage_lines:
+                try:
+                    partial_course = Course(line)
+                except InvalidCourse as e:
+                    # print("InvalidCourse:", line)
+                    pass
 
     return data
 
