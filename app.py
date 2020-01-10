@@ -175,13 +175,15 @@ class CoursePiece(dict):
 
         return {"subject": field[:4], "number": field[5:9], "name": field[10:].strip()}
 
-    # TODO parse multiple instructors per course
     def instructor_parser(self, field):
         parts = field.split(" - ")
         if len(parts) != 2:
             return None
         else:
-            return {"type": parts[0].strip(), "name": parts[1].strip()}
+            if len(parts[1].strip()) > 18:
+                return {"primary": parts[1][:14].strip(), "secondary": parts[1][14:].strip()}
+            else:
+                return {"primary": parts[1].strip()}
 
     index_map = {
         0: FieldParser("course", "course_name_parser"),
@@ -197,7 +199,7 @@ class CoursePiece(dict):
         10: FieldParser("phone", "ignore_parser"),
         11: FieldParser("waitList", "bool_parser"),
         12: FieldParser("preCheck", "bool_parser"),
-        13: FieldParser("reserved"),
+        13: FieldParser("reserved", "bool_parser"),
         14: FieldParser("attr"),
         15: FieldParser("creditHours"),
         16: FieldParser("billHours"),
@@ -214,6 +216,7 @@ class CoursePiece(dict):
         sections = CoursePiece.legend.split(" ")
         self.sections = list(map(lambda s: len(s), sections))
 
+        self["source"] = raw_course
         self.parse(raw_course)
 
     def parse(self, raw_course):
