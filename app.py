@@ -62,7 +62,9 @@ known_garbage_lines = [
 
 
 class Course(dict):
-    course_name_regex = re.compile("([A-Z]){4} (\d|[A-Z]){4}")
+    legend = "------------------------------------- --- ----- ---- ------------- ---- ---- ------- ------ ---------- ---- ---- --- ---- ----- ---- ---- --------------------------------"
+    course_name_regex = re.compile("([A-Z]){3}([A-Z]| ) (\d|[A-Z]){4}")
+    valid_days_of_the_week = ["M", "T", "W", "R", "F", "S", "U"]
     known_schedule_values = [
         "LEC",
         "SEM",
@@ -78,6 +80,16 @@ class Course(dict):
         "CEX",
     ]
 
+    class Valid:
+        def __init__(self):
+            self.course = True
+            self.crn = True
+            self.slot = True
+            self.days_of_the_week = True
+            self.begin = True
+            self.end = True
+            self.schedule = True
+
     def default_parser(self, field):
         field = field.strip()
 
@@ -85,17 +97,43 @@ class Course(dict):
             return None
 
         try:
-            return int(field)
+            return self.int_parser(field)
         except ValueError:
             return field
+
+    def int_parser(self, field):
+        return int(field)
+
+    def crn_parser(self, field):
+        try:
+            return self.int_parser(field)
+        except ValueError:
+            self.valid.crn = False
+
+    def slot_parser(self, field):
+        try:
+            return self.int_parser(field)
+        except ValueError:
+            self.valid.slot = False
+
+    def begin_parser(self, field):
+        try:
+            return self.int_parser(field)
+        except ValueError:
+            self.valid.begin = False
+
+    def end_parser(self, field):
+        try:
+            return self.int_parser(field)
+        except ValueError:
+            self.valid.end = False
 
     def schedule_parser(self, field):
         field = field.strip()
         if field in self.known_schedule_values:
             return field
         else:
-            if not Course.course_name_regex.match(self.raw_course[:9]):
-                raise InvalidCourse(field)
+            self.valid.schedule = False
 
     def bool_parser(self, field):
         field = field.strip()
@@ -115,10 +153,23 @@ class Course(dict):
     def days_of_the_week_parser(self, field):
         fields = field.strip().split(" ")
         fields = [x for x in fields if x]
+
+        if len(fields) == 0:
+            self.valid.days_of_the_week = False
+
+        for field in fields:
+            if not field in Course.valid_days_of_the_week:
+                self.valid.days_of_the_week = False
+
         return fields
 
     def course_name_parser(self, field):
-        if field.strip() == "":
+        if not Course.course_name_regex.match(self.raw_course[:9]):
+            self.partial = True
+            self.valid.course = False
+
+        stripped = field.strip()
+        if stripped == "":
             return None
 
         return {"subject": field[:4], "number": field[5:9], "name": field[10:].strip()}
@@ -129,16 +180,16 @@ class Course(dict):
         if len(parts) != 2:
             return None
         else:
-            return {"type": parts[0], "name": parts[1]}
+            return {"type": parts[0].strip(), "name": parts[1].strip()}
 
     index_map = {
         0: FieldParser("course", "course_name_parser"),
         1: FieldParser("section"),
-        2: FieldParser("crn"),
-        3: FieldParser("slot"),
+        2: FieldParser("crn", "crn_parser"),
+        3: FieldParser("slot", "slot_parser"),
         4: FieldParser("days", "days_of_the_week_parser"),
-        5: FieldParser("begin"),
-        6: FieldParser("end"),
+        5: FieldParser("begin", "begin_parser"),
+        6: FieldParser("end", "end_parser"),
         7: FieldParser("room"),  # TODO parse one char room names
         8: FieldParser("schedType", "schedule_parser"),
         9: FieldParser("labSection"),
@@ -154,10 +205,14 @@ class Course(dict):
 
     def __init__(self, raw_course, *args, **kwargs):
         super(Course, self).__init__(*args, **kwargs)
-        legend = "------------------------------------- --- ----- ---- ------------- ---- ---- ------- ------ ---------- ---- ---- --- ---- ----- ---- ---- --------------------------------"
-        sections = legend.split(" ")
+
+        self.partial = False
         self.raw_course = raw_course
+        self.valid = Course.Valid()
+
+        sections = Course.legend.split(" ")
         self.sections = list(map(lambda s: len(s), sections))
+
         self.parse(raw_course)
 
     def parse(self, raw_course):
@@ -176,6 +231,21 @@ class Course(dict):
             last = location
             raw_course.replace(current_data, "")
 
+        if self.valid.course:
+            return
+
+        if (
+            self.valid.begin
+            and self.valid.end
+            and (self.valid.crn or self.valid.schedule or self.valid.days_of_the_week)
+        ):
+            return
+
+        if self.valid.crn and self.valid.slot and self["slot"] == 99:
+            return
+
+        raise InvalidCourse(f"{str(vars(self.valid))} - {raw_course}")
+
 
 def parse_entire_list():
     response = grab_entire_resp()
@@ -186,6 +256,9 @@ def parse_entire_list():
     pre = soup.body.pre.text
 
     contents = pre.split("Subject: ")
+
+    campus = None
+    session = None
 
     for entry in contents:
         content = entry.split("\n")
@@ -199,19 +272,58 @@ def parse_entire_list():
         content.pop(0)
 
         for line in content:
-            if Course.course_name_regex.match(line[:9]):
-                try:
-                    course = Course(line)
-                    data["courses"].append(course)
-                except InvalidCourse:
-                    pass
-                    # print("Invalid", line)
-            elif not line in known_garbage_lines:
-                try:
-                    partial_course = Course(line)
-                except InvalidCourse as e:
-                    # print("InvalidCourse:", line)
-                    pass
+            if line in known_garbage_lines:
+                continue
+
+            course = None
+
+            try:
+                course = Course(line)
+                data["courses"].append(course)
+                continue
+            except InvalidCourse:
+                pass
+
+            if course and course.partial:
+                pass
+                # TODO jam partial_course data into last recorded course
+            else:
+                if line.startswith("Campus: "):
+                    campus = line[8:].strip()
+                elif line.startswith("Session: "):
+                    session = line[8:].strip()
+                else:
+                    should_be_empty = line[:42].strip()
+                    if should_be_empty != "":
+                        if line[35:36] != "  ":
+                            # TODO parse date -> date
+                            continue
+                        else:
+                            raise Exception(f"Invalid line: {line}")
+
+                    remaining_data = line[42:]
+
+                    might_by_empty = remaining_data[:15].strip()
+
+                    if might_by_empty == "":
+                        # TODO handle MAJOR MINOR tags
+                        continue
+
+                    if remaining_data.startswith("RESERVED  FOR: "):
+                        pass
+                        # TODO handle meta
+                    elif remaining_data.startswith("CROSS LISTED: "):
+                        pass
+                        # TODO handle meta
+                    elif remaining_data.startswith("AVAILABLE  TO: "):
+                        pass
+                        # TODO handle meta
+                    elif remaining_data.startswith("NOT AVAILABLE TO: "):
+                        pass
+                        # TODO handle meta
+                    else:
+                        pass
+                        # TODO handle context-less meta
 
     return data
 
