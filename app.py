@@ -50,7 +50,7 @@ class FieldParser:
         self.parse_function = parse_function
 
 
-class InvalidCourse(Exception):
+class InvalidCoursePiece(Exception):
     pass
 
 
@@ -61,7 +61,7 @@ known_garbage_lines = [
 ]
 
 
-class Course(dict):
+class CoursePiece(dict):
     legend = "------------------------------------- --- ----- ---- ------------- ---- ---- ------- ------ ---------- ---- ---- --- ---- ----- ---- ---- --------------------------------"
     course_name_regex = re.compile("([A-Z]){3}([A-Z]| ) (\d|[A-Z]){4}")
     valid_days_of_the_week = ["M", "T", "W", "R", "F", "S", "U"]
@@ -156,15 +156,16 @@ class Course(dict):
 
         if len(fields) == 0:
             self.valid.days_of_the_week = False
+            return None
 
         for field in fields:
-            if not field in Course.valid_days_of_the_week:
+            if not field in CoursePiece.valid_days_of_the_week:
                 self.valid.days_of_the_week = False
 
         return fields
 
     def course_name_parser(self, field):
-        if not Course.course_name_regex.match(self.raw_course[:9]):
+        if not CoursePiece.course_name_regex.match(self.raw_course[:9]):
             self.partial = True
             self.valid.course = False
 
@@ -204,13 +205,13 @@ class Course(dict):
     }
 
     def __init__(self, raw_course, *args, **kwargs):
-        super(Course, self).__init__(*args, **kwargs)
+        super(CoursePiece, self).__init__(*args, **kwargs)
 
         self.partial = False
         self.raw_course = raw_course
-        self.valid = Course.Valid()
+        self.valid = CoursePiece.Valid()
 
-        sections = Course.legend.split(" ")
+        sections = CoursePiece.legend.split(" ")
         self.sections = list(map(lambda s: len(s), sections))
 
         self.parse(raw_course)
@@ -222,7 +223,7 @@ class Course(dict):
 
             current_data = raw_course[last:location]
 
-            cp = Course.index_map[index]
+            cp = CoursePiece.index_map[index]
             parsed_data = getattr(self, cp.parse_function)(current_data)
 
             if parsed_data != None:
@@ -244,7 +245,7 @@ class Course(dict):
         if self.valid.crn and self.valid.slot and self["slot"] == 99:
             return
 
-        raise InvalidCourse(f"{str(vars(self.valid))} - {raw_course}")
+        raise InvalidCoursePiece(f"{str(vars(self.valid))} - {raw_course}")
 
 
 def parse_entire_list():
@@ -278,13 +279,13 @@ def parse_entire_list():
             course = None
 
             try:
-                course = Course(line)
+                course = CoursePiece(line)
                 data["courses"].append(course)
                 continue
-            except InvalidCourse:
+            except InvalidCoursePiece:
                 pass
 
-            if course and course.partial:
+            if course and CoursePiece.partial:
                 pass
                 # TODO jam partial_course data into last recorded course
             else:
