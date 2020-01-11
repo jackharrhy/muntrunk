@@ -82,6 +82,7 @@ class CoursePiece(dict):
 
     class Valid:
         def __init__(self):
+            self.room = True
             self.course = True
             self.crn = True
             self.slot = True
@@ -181,9 +182,31 @@ class CoursePiece(dict):
             return None
         else:
             if len(parts[1].strip()) > 18:
-                return {"primary": parts[1][:14].strip(), "secondary": parts[1][14:].strip()}
+                return {
+                    "primary": parts[1][:14].strip(),
+                    "secondary": parts[1][14:].strip(),
+                }
             else:
                 return {"primary": parts[1].strip()}
+
+    room_regex = re.compile(
+        "(?P<building>([A-Z])([A-Z]| ){2})(?P<room>(\d){4}([A-Z])?)"
+    )
+
+    def room_parser(self, field):
+        field = field.strip()
+        if field == "":
+            return None
+
+        potential_match = CoursePiece.room_regex.match(field)
+        if potential_match:
+            groups = potential_match.groupdict()
+            for k in groups:
+                groups[k] = groups[k].strip()
+            return groups
+        else:
+            self.valid.room = False
+            return None
 
     index_map = {
         0: FieldParser("course", "course_name_parser"),
@@ -193,7 +216,7 @@ class CoursePiece(dict):
         4: FieldParser("days", "days_of_the_week_parser"),
         5: FieldParser("begin", "begin_parser"),
         6: FieldParser("end", "end_parser"),
-        7: FieldParser("room"),  # TODO parse one char room names
+        7: FieldParser("room", "room_parser"),
         8: FieldParser("schedType", "schedule_parser"),
         9: FieldParser("labSection"),
         10: FieldParser("phone", "ignore_parser"),
