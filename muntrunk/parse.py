@@ -1,6 +1,9 @@
 import re
-from .scrape import grab_entire_resp
+from dataclasses import dataclass
 from bs4 import BeautifulSoup
+from .scrape import grab_entire_resp
+from .types import Course, Section, Slot, types_from_piece
+
 
 class FieldParser:
     def __init__(self, name, parse_function="default_parser"):
@@ -8,7 +11,7 @@ class FieldParser:
         self.parse_function = parse_function
 
 
-class InvalidCoursePiece(Exception):
+class InvalidPiece(Exception):
     pass
 
 
@@ -19,9 +22,9 @@ known_garbage_lines = [
 ]
 
 
-class CoursePiece(dict):
+class Piece(dict):
     legend = "------------------------------------- --- ----- ---- ------------- ---- ---- ------- ------ ---------- ---- ---- --- ---- ----- ---- ---- --------------------------------"
-    course_name_regex = re.compile("([A-Z]){3}([A-Z]| ) (\d|[A-Z]){4}")
+    course_name_regex = re.compile("([A-Z])([A-Z]| ){3} (\d|[A-Z]){4}")
     valid_days_of_the_week = ["M", "T", "W", "R", "F", "S", "U"]
     known_schedule_values = [
         "LEC",
@@ -38,16 +41,16 @@ class CoursePiece(dict):
         "CEX",
     ]
 
+    @dataclass
     class Valid:
-        def __init__(self):
-            self.room = True
-            self.course = True
-            self.crn = True
-            self.slot = True
-            self.days_of_the_week = True
-            self.begin = True
-            self.end = True
-            self.schedule = True
+        room: bool = True
+        course: bool = True
+        crn: bool = True
+        slot: bool = True
+        days_of_the_week: bool = True
+        begin: bool = True
+        end: bool = True
+        schedule: bool = True
 
     def default_parser(self, field):
         field = field.strip()
@@ -59,6 +62,14 @@ class CoursePiece(dict):
             return self.int_parser(field)
         except ValueError:
             return field
+
+    def potential_na_parser(self, field):
+        value = self.default_parser(field)
+
+        if value == "NA":
+            return None
+        else:
+            return value
 
     def int_parser(self, field):
         return int(field)
@@ -118,13 +129,13 @@ class CoursePiece(dict):
             return None
 
         for field in fields:
-            if not field in CoursePiece.valid_days_of_the_week:
+            if not field in Piece.valid_days_of_the_week:
                 self.valid.days_of_the_week = False
 
         return fields
 
     def course_name_parser(self, field):
-        if not CoursePiece.course_name_regex.match(self.raw_course[:9]):
+        if not Piece.course_name_regex.match(self.raw_course[:9]):
             self.partial = True
             self.valid.course = False
 
@@ -137,7 +148,7 @@ class CoursePiece(dict):
     def instructor_parser(self, field):
         parts = field.split(" - ")
         if len(parts) != 2:
-            return None
+            return {"primary": None, "secondary": None}
         else:
             if len(parts[1].strip()) > 18:
                 return {
@@ -145,7 +156,7 @@ class CoursePiece(dict):
                     "secondary": parts[1][14:].strip(),
                 }
             else:
-                return {"primary": parts[1].strip()}
+                return {"primary": parts[1].strip(), "secondary": None}
 
     room_regex = re.compile(
         "(?P<building>([A-Z])([A-Z]| ){2})(?P<room>(\d){4}([A-Z])?)"
@@ -154,9 +165,10 @@ class CoursePiece(dict):
     def room_parser(self, field):
         field = field.strip()
         if field == "":
-            return None
+            self.valid.room = False
+            return {"building": None, "room": None}
 
-        potential_match = CoursePiece.room_regex.match(field)
+        potential_match = Piece.room_regex.match(field)
         if potential_match:
             groups = potential_match.groupdict()
             for k in groups:
@@ -164,7 +176,7 @@ class CoursePiece(dict):
             return groups
         else:
             self.valid.room = False
-            return None
+            return {"building": None, "room": None}
 
     index_map = {
         0: FieldParser("course", "course_name_parser"),
@@ -183,18 +195,18 @@ class CoursePiece(dict):
         13: FieldParser("reserved", "bool_parser"),
         14: FieldParser("attr"),
         15: FieldParser("creditHours"),
-        16: FieldParser("billHours"),
+        16: FieldParser("billHours", "potential_na_parser"),
         17: FieldParser("instructor", "instructor_parser"),
     }
 
     def __init__(self, raw_course, *args, **kwargs):
-        super(CoursePiece, self).__init__(*args, **kwargs)
+        super(Piece, self).__init__(*args, **kwargs)
 
         self.partial = False
         self.raw_course = raw_course
-        self.valid = CoursePiece.Valid()
+        self.valid = Piece.Valid()
 
-        sections = CoursePiece.legend.split(" ")
+        sections = Piece.legend.split(" ")
         self.sections = list(map(lambda s: len(s), sections))
 
         self["source"] = raw_course
@@ -207,29 +219,20 @@ class CoursePiece(dict):
 
             current_data = raw_course[last:location]
 
-            cp = CoursePiece.index_map[index]
+            cp = Piece.index_map[index]
             parsed_data = getattr(self, cp.parse_function)(current_data)
 
-            if parsed_data != None:
-                self[cp.name] = parsed_data
+            self[cp.name] = parsed_data
 
             last = location
             raw_course.replace(current_data, "")
 
-        if self.valid.course:
-            return
+        types = types_from_piece(self.valid, self)
 
-        if (
-            self.valid.begin
-            and self.valid.end
-            and (self.valid.crn or self.valid.schedule or self.valid.days_of_the_week)
-        ):
-            return
+        if not types:
+            raise InvalidPiece(f"{str(vars(self.valid))} - {raw_course}")
 
-        if self.valid.crn and self.valid.slot and self["slot"] == 99:
-            return
-
-        raise InvalidCoursePiece(f"{str(vars(self.valid))} - {raw_course}")
+        self["types"] = types
 
 
 def parse_entire_list():
@@ -251,64 +254,79 @@ def parse_entire_list():
 
         subject = content[0].strip()
 
-        # if subject != "Chemistry":
-        #    continue
-
         content.pop(0)
+
+        last_course = None
+        last_section = None
 
         for line in content:
             if line in known_garbage_lines:
                 continue
 
-            course = None
-
             try:
-                course = CoursePiece(line)
-                data["courses"].append(course)
+                piece = Piece(line)
+                types = piece["types"]
+
+                if types.course:
+                    if last_course:
+                        data["courses"].append(last_course)
+                        last_course = None
+                        last_section = None
+
+                    last_course = types.course
+
+                    if len(types.course.sections) > 0:
+                        last_section = types.course.sections[0]
+
+                elif types.section:
+                    last_course.sections.append(types.section)
+                    last_section = types.section
+
+                elif types.slot:
+                    last_section.slots.append(types.slot)
+
                 continue
-            except InvalidCoursePiece:
+            except InvalidPiece:
                 pass
 
-            if course and CoursePiece.partial:
-                pass
-                # TODO jam partial_course data into last recorded course
+            if line.startswith("Campus: "):
+                campus = line[8:].strip()
+            elif line.startswith("Session: "):
+                session = line[8:].strip()
             else:
-                if line.startswith("Campus: "):
-                    campus = line[8:].strip()
-                elif line.startswith("Session: "):
-                    session = line[8:].strip()
-                else:
-                    should_be_empty = line[:42].strip()
-                    if should_be_empty != "":
-                        if line[35:36] != "  ":
-                            # TODO parse date -> date
-                            continue
-                        else:
-                            raise Exception(f"Invalid line: {line}")
-
-                    remaining_data = line[42:]
-
-                    might_by_empty = remaining_data[:15].strip()
-
-                    if might_by_empty == "":
-                        # TODO handle MAJOR MINOR tags
+                should_be_empty = line[:42].strip()
+                if should_be_empty != "":
+                    if line[35:36] != "  ":
+                        # TODO parse date -> date
                         continue
-
-                    if remaining_data.startswith("RESERVED  FOR: "):
-                        pass
-                        # TODO handle meta
-                    elif remaining_data.startswith("CROSS LISTED: "):
-                        pass
-                        # TODO handle meta
-                    elif remaining_data.startswith("AVAILABLE  TO: "):
-                        pass
-                        # TODO handle meta
-                    elif remaining_data.startswith("NOT AVAILABLE TO: "):
-                        pass
-                        # TODO handle meta
                     else:
-                        pass
-                        # TODO handle context-less meta
+                        raise Exception(f"Invalid line: {line}")
+
+                remaining_data = line[42:]
+
+                might_by_empty = remaining_data[:15].strip()
+
+                if might_by_empty == "":
+                    # TODO handle MAJOR MINOR tags
+                    continue
+
+                if remaining_data.startswith("RESERVED  FOR: "):
+                    pass
+                    # TODO handle meta
+                elif remaining_data.startswith("CROSS LISTED: "):
+                    pass
+                    # TODO handle meta
+                elif remaining_data.startswith("AVAILABLE  TO: "):
+                    pass
+                    # TODO handle meta
+                elif remaining_data.startswith("NOT AVAILABLE TO: "):
+                    pass
+                    # TODO handle meta
+                else:
+                    pass
+                    # TODO handle context-less meta
+
+            if last_course:
+                data["courses"].append(last_course)
 
     return data
-
