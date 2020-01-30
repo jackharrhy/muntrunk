@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 from .scrape import grab_entire_resp
-from .types import Course, Section, Slot, types_from_piece
+from .types import Semester, Course, Section, Slot, types_from_piece
 
 
 class FieldParser:
@@ -239,7 +239,7 @@ def parse_entire_list():
     response = grab_entire_resp()
     soup = BeautifulSoup(response.text, "html.parser")
 
-    data = {"semester": soup.body.h2.text, "courses": []}
+    semester = Semester(semester=soup.body.h2.text, courses=[])
 
     pre = soup.body.pre.text
 
@@ -269,7 +269,7 @@ def parse_entire_list():
 
                 if types.course:
                     if last_course:
-                        data["courses"].append(last_course)
+                        semester.courses.append(last_course)
                         last_course = None
                         last_section = None
 
@@ -327,6 +327,6 @@ def parse_entire_list():
                     # TODO handle context-less meta
 
             if last_course:
-                data["courses"].append(last_course)
+                semester.courses.append(last_course)
 
-    return data
+    return semester

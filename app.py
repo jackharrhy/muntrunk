@@ -10,5 +10,4 @@ def get_entire_list():
 
 
 if __name__ == "__main__":
-    for course in parse_entire_list()["courses"]:
-        print(course)
+    print(parse_entire_list().json())

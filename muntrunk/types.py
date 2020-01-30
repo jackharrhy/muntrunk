@@ -1,4 +1,5 @@
 from pydantic.dataclasses import dataclass
+from pydantic import BaseModel
 from typing import Any, List, Optional
 
 
@@ -60,6 +61,11 @@ class Course:
             piece["course"]["name"],
             [],
         )
+
+
+class Semester(BaseModel):
+    semester: str
+    courses: List[Course]
 
 
 @dataclass
