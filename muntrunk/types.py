@@ -12,11 +12,11 @@ class Slot(BaseModel):
 
     def from_piece(piece):
         return Slot(
-            days_of_week = piece["days"],
-            begin = piece["begin"],
-            end = piece["end"],
-            building = piece["room"]["building"],
-            room = piece["room"]["room"],
+            days_of_week=piece["days"],
+            begin=piece["begin"],
+            end=piece["end"],
+            building=piece["room"]["building"],
+            room=piece["room"]["room"],
         )
 
 
@@ -33,15 +33,15 @@ class Section(BaseModel):
 
     def from_piece(piece):
         return Section(
-            crn = piece["crn"],
-            primary_instructor = piece["instructor"]["primary"],
-            secondary_instructor = piece["instructor"]["secondary"],
-            wait_list = piece["waitList"],
-            pre_check = piece["preCheck"],
-            schedule_type = piece["schedType"],
-            credit_hours = piece["creditHours"],
-            billed_hours = piece["billHours"],
-            slots = [],
+            crn=piece["crn"],
+            primary_instructor=piece["instructor"]["primary"],
+            secondary_instructor=piece["instructor"]["secondary"],
+            wait_list=piece["waitList"],
+            pre_check=piece["preCheck"],
+            schedule_type=piece["schedType"],
+            credit_hours=piece["creditHours"],
+            billed_hours=piece["billHours"],
+            slots=[],
         )
 
 
@@ -53,15 +53,15 @@ class Course(BaseModel):
 
     def from_piece(piece):
         return Course(
-            subject = piece["course"]["subject"],
-            number = piece["course"]["number"],
-            name = piece["course"]["name"],
-            sections = [],
+            subject=piece["course"]["subject"],
+            number=piece["course"]["number"],
+            name=piece["course"]["name"],
+            sections=[],
         )
 
 
 class Semester(BaseModel):
-    semester: str
+    title: str
     courses: List[Course]
 
 

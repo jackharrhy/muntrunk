@@ -239,7 +239,7 @@ def parse_entire_list():
     response = grab_entire_resp()
     soup = BeautifulSoup(response.text, "html.parser")
 
-    semester = Semester(semester=soup.body.h2.text, courses=[])
+    semester = Semester(title=soup.body.h2.text, courses=[])
 
     pre = soup.body.pre.text
 
