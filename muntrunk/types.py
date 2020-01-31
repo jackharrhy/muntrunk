@@ -1,10 +1,9 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from pydantic import BaseModel
 from typing import Any, List, Optional
 
 
-@dataclass
-class Slot:
+class Slot(BaseModel):
     days_of_week: List[str]
     begin: int
     end: int
@@ -13,16 +12,15 @@ class Slot:
 
     def from_piece(piece):
         return Slot(
-            piece["days"],
-            piece["begin"],
-            piece["end"],
-            piece["room"]["building"],
-            piece["room"]["room"],
+            days_of_week = piece["days"],
+            begin = piece["begin"],
+            end = piece["end"],
+            building = piece["room"]["building"],
+            room = piece["room"]["room"],
         )
 
 
-@dataclass
-class Section:
+class Section(BaseModel):
     crn: int
     primary_instructor: Optional[str]
     secondary_instructor: Optional[str]
@@ -35,20 +33,19 @@ class Section:
 
     def from_piece(piece):
         return Section(
-            piece["crn"],
-            piece["instructor"]["primary"],
-            piece["instructor"]["secondary"],
-            piece["waitList"],
-            piece["preCheck"],
-            piece["schedType"],
-            piece["creditHours"],
-            piece["billHours"],
-            [],
+            crn = piece["crn"],
+            primary_instructor = piece["instructor"]["primary"],
+            secondary_instructor = piece["instructor"]["secondary"],
+            wait_list = piece["waitList"],
+            pre_check = piece["preCheck"],
+            schedule_type = piece["schedType"],
+            credit_hours = piece["creditHours"],
+            billed_hours = piece["billHours"],
+            slots = [],
         )
 
 
-@dataclass
-class Course:
+class Course(BaseModel):
     subject: str
     number: str
     name: str
@@ -56,10 +53,10 @@ class Course:
 
     def from_piece(piece):
         return Course(
-            piece["course"]["subject"],
-            piece["course"]["number"],
-            piece["course"]["name"],
-            [],
+            subject = piece["course"]["subject"],
+            number = piece["course"]["number"],
+            name = piece["course"]["name"],
+            sections = [],
         )
 
 
