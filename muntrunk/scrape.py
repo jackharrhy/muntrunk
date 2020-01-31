@@ -2,7 +2,7 @@ import shelve
 import requests
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.5",
     "Content-Type": "application/x-www-form-urlencoded",
@@ -15,7 +15,7 @@ headers = {
 data = {
     "p_term": "201902",
     "p_levl": "01*04",
-    "campus": "St. John's",
+    "campus": "%",
     "faculty": "%",
     "prof": "%",
     "crn": "%",

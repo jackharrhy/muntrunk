@@ -134,8 +134,26 @@ class Piece(dict):
 
         return fields
 
+    # silly edgecase where the session name refers to the course, with no course listed
+    course_name_in_session_regex = re.compile(
+        "((?P<subject>[A-Z]*) (?P<number>\d{4})-(?P<section>\d{3}))+"
+    )
+
     def course_name_parser(self, field):
         if not Piece.course_name_regex.match(self.raw_course[:9]):
+            if self.session:
+                potential_match = Piece.course_name_in_session_regex.match(self.session)
+
+                if potential_match:
+                    groups = potential_match.groupdict()
+                    for k in groups:
+                        groups[k] = groups[k].strip()
+                    return {
+                        "subject": groups["subject"],
+                        "number": groups["number"],
+                        "name": None,
+                    }
+
             self.partial = True
             self.valid.course = False
 
@@ -199,8 +217,11 @@ class Piece(dict):
         17: FieldParser("instructor", "instructor_parser"),
     }
 
-    def __init__(self, raw_course, *args, **kwargs):
+    def __init__(self, raw_course, campus, session, *args, **kwargs):
         super(Piece, self).__init__(*args, **kwargs)
+
+        self.campus = campus
+        self.session = session
 
         self.partial = False
         self.raw_course = raw_course
@@ -264,7 +285,7 @@ def parse_w2020():
                 continue
 
             try:
-                piece = Piece(line)
+                piece = Piece(line, campus, session)
                 types = piece["types"]
 
                 if types.course:

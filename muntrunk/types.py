@@ -48,7 +48,7 @@ class Section(BaseModel):
 class Course(BaseModel):
     subject: str
     number: str
-    name: str
+    name: Optional[str]
     sections: List[Section]
 
     def from_piece(piece):
