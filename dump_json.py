@@ -1,3 +1,3 @@
-from muntrunk.parse import parse_entire_list
+from muntrunk.parse import parse_w2020
 
-print(parse_entire_list().json())
+print(parse_w2020().json())

@@ -235,7 +235,7 @@ class Piece(dict):
         self["types"] = types
 
 
-def parse_entire_list():
+def parse_w2020():
     response = grab_entire_resp()
     soup = BeautifulSoup(response.text, "html.parser")
 
