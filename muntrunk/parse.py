@@ -39,6 +39,7 @@ class Piece(dict):
         "INT",
         "REA",
         "CEX",
+        "WWW",
     ]
 
     @dataclass
@@ -59,7 +60,7 @@ class Piece(dict):
             return None
 
         try:
-            return self.int_parser(field)
+            return int(field)
         except ValueError:
             return field
 
@@ -71,30 +72,31 @@ class Piece(dict):
         else:
             return value
 
-    def int_parser(self, field):
-        return int(field)
-
     def crn_parser(self, field):
+        if len(field.strip()) != 5:
+            self.valid.crn = False
+            return None
+
         try:
-            return self.int_parser(field)
+            return int(field)
         except ValueError:
             self.valid.crn = False
 
     def slot_parser(self, field):
         try:
-            return self.int_parser(field)
+            return int(field)
         except ValueError:
             self.valid.slot = False
 
     def begin_parser(self, field):
         try:
-            return self.int_parser(field)
+            return int(field)
         except ValueError:
             self.valid.begin = False
 
     def end_parser(self, field):
         try:
-            return self.int_parser(field)
+            return int(field)
         except ValueError:
             self.valid.end = False
 
@@ -145,6 +147,7 @@ class Piece(dict):
                 potential_match = Piece.course_name_in_session_regex.match(self.session)
 
                 if potential_match:
+                    self.course_name_in_session = True
                     groups = potential_match.groupdict()
                     for k in groups:
                         groups[k] = groups[k].strip()
@@ -220,10 +223,13 @@ class Piece(dict):
     def __init__(self, raw_course, campus, session, *args, **kwargs):
         super(Piece, self).__init__(*args, **kwargs)
 
-        self.campus = campus
+        self["campus"] = campus
+
         self.session = session
+        self["session"] = session
 
         self.partial = False
+        self.course_name_in_session = False
         self.raw_course = raw_course
         self.valid = Piece.Valid()
 
@@ -247,6 +253,10 @@ class Piece(dict):
 
             last = location
             raw_course.replace(current_data, "")
+
+        if self.course_name_in_session:
+            if (not self.valid.crn) and (not self.valid.schedule):
+                self.valid.course = False
 
         types = types_from_piece(self.valid, self)
 

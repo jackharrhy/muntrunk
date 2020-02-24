@@ -46,6 +46,8 @@ class Section(BaseModel):
 
 
 class Course(BaseModel):
+    campus: str
+    session: str
     subject: str
     number: str
     name: Optional[str]
@@ -53,6 +55,8 @@ class Course(BaseModel):
 
     def from_piece(piece):
         return Course(
+            campus=piece["campus"],
+            session=piece["session"],
             subject=piece["course"]["subject"],
             number=piece["course"]["number"],
             name=piece["course"]["name"],
@@ -83,9 +87,10 @@ def types_from_piece(valid, piece):
     is_on_campus = contains_time and (
         valid.crn or valid.schedule or valid.days_of_the_week
     )
-    is_online = valid.crn and valid.slot and piece["slot"] == 99
+    is_online = piece["slot"] == 99
+    is_edge_case_but_valid = valid.crn and valid.schedule
 
-    if is_on_campus or is_online:
+    if is_on_campus or is_online or is_edge_case_but_valid:
         if valid.crn:
             types.section = Section.from_piece(piece)
 

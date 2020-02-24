@@ -17,6 +17,8 @@ class Course(Base):
     id = Column(Integer, primary_key=True)
     semester_id = Column(Integer, ForeignKey("semesters.id"))
     semester = relationship("Semester")
+    campus = Column(String)
+    session = Column(String)
     subject = Column(String)
     number = Column(String)
     name = Column(String)
