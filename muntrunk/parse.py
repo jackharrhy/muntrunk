@@ -357,7 +357,7 @@ def parse_w2020():
                     pass
                     # TODO handle context-less meta
 
-            if last_course:
-                semester.courses.append(last_course)
+        if last_course:
+            semester.courses.append(last_course)
 
     return semester
