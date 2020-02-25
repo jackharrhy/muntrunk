@@ -152,8 +152,8 @@ class Piece(dict):
                     for k in groups:
                         groups[k] = groups[k].strip()
                     return {
-                        "subject": groups["subject"],
-                        "number": groups["number"],
+                        "subject": groups["subject"].strip(),
+                        "number": groups["number"].strip(),
                         "name": None,
                     }
 
@@ -164,7 +164,7 @@ class Piece(dict):
         if stripped == "":
             return None
 
-        return {"subject": field[:4], "number": field[5:9], "name": field[10:].strip()}
+        return {"subject": field[:4].strip(), "number": field[5:9].strip(), "name": field[10:].strip()}
 
     def instructor_parser(self, field):
         parts = field.split(" - ")
