@@ -1,3 +1,4 @@
-from muntrunk.parse import parse_w2020
+from muntrunk.data import fetch_all_semesters
 
-print(parse_w2020().json())
+for semester in fetch_all_semesters():
+    print(semester.json())

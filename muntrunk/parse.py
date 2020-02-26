@@ -1,7 +1,6 @@
 import re
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
-from .scrape import grab_entire_resp
 from .types import Semester, Course, Section, Slot, types_from_piece
 
 
@@ -117,7 +116,7 @@ class Piece(dict):
         elif len(fields) == 2:
             return [bool(fields[0]), bool(fields[1])]
         else:
-            raise "found a boolean field with > 2 fields!"
+            return None
 
     def ignore_parser(self, field):
         return None
@@ -164,7 +163,11 @@ class Piece(dict):
         if stripped == "":
             return None
 
-        return {"subject": field[:4].strip(), "number": field[5:9].strip(), "name": field[10:].strip()}
+        return {
+            "subject": field[:4].strip(),
+            "number": field[5:9].strip(),
+            "name": field[10:].strip(),
+        }
 
     def instructor_parser(self, field):
         parts = field.split(" - ")
@@ -266,8 +269,7 @@ class Piece(dict):
         self["types"] = types
 
 
-def parse_w2020():
-    response = grab_entire_resp()
+def parse_semester(response):
     soup = BeautifulSoup(response.text, "html.parser")
 
     semester = Semester(title=soup.body.h2.text, courses=[])
