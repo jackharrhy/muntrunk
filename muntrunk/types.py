@@ -5,8 +5,8 @@ from typing import Any, List, Optional
 
 class Slot(BaseModel):
     days_of_week: List[str]
-    begin: int
-    end: int
+    begin: Optional[int]
+    end: Optional[int]
     building: Optional[str]
     room: Optional[str]
 

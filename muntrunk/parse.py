@@ -312,7 +312,11 @@ def parse_semester(response):
                         last_section = types.course.sections[0]
 
                 elif types.section:
-                    last_course.sections.append(types.section)
+                    if last_course:
+                        last_course.sections.append(types.section)
+                    else:
+                        # NURS 4512 is quite odd
+                        semester.courses[-1].sections.append(types.section)
                     last_section = types.section
 
                 elif types.slot:

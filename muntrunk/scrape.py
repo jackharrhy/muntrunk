@@ -1,6 +1,9 @@
 import shelve
+import logging
 import requests
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 headers = {
     "User-Agent": "github.com/jackharrhy/muntrunk",
@@ -39,14 +42,17 @@ def actually_fetch_banner(year, term, level):
 
 def fetch_banner(year, term, level):
     key = f"{year}_{term}_{level}"
+    logger.debug(f"fetch_banner - key: {key}")
 
     if year > 2030:  # spam prevent, sometime in the future fix this :)
         exit(1)
 
     with shelve.open("persist") as db:
         if not key in db:
+            logger.debug(f"fetch_banner - actually fetching data...")
             entire_resp = actually_fetch_banner(year, term, level)
             db[key] = entire_resp
             return entire_resp
         else:
+            logger.debug(f"fetch_banner - data already fetched")
             return db[key]
