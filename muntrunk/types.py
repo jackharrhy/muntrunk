@@ -65,7 +65,9 @@ class Course(BaseModel):
 
 
 class Semester(BaseModel):
-    title: str
+    year: int
+    term: int
+    level: int
     courses: List[Course]
 
 

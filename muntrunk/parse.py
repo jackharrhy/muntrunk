@@ -269,10 +269,15 @@ class Piece(dict):
         self["types"] = types
 
 
-def parse_semester(response):
+def parse_semester(response, year, term, level):
     soup = BeautifulSoup(response.text, "html.parser")
 
-    semester = Semester(title=soup.body.h2.text, courses=[])
+    semester = Semester(
+        year=year,
+        term=term,
+        level=level,
+        courses=[]
+    )
 
     pre = soup.body.pre.text
 

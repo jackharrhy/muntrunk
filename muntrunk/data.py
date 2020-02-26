@@ -15,6 +15,6 @@ def fetch_all_semesters():
                 if not result:
                     finished = True
                 else:
-                    yield parse_semester(result)
+                    yield parse_semester(result, year, term, level)
 
         year += 1

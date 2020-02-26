@@ -9,7 +9,9 @@ Base = declarative_base()
 class Semester(Base):
     __tablename__ = "semesters"
     id = Column(Integer, primary_key=True)
-    title = Column(String)
+    year = Column(Integer)
+    term = Column(Integer)
+    level = Column(Integer)
 
 
 class Course(Base):
