@@ -5,8 +5,6 @@ INITIAL_YEAR = 2000
 
 
 def fetch_all_semesters():
-    semesters = []
-
     year = INITIAL_YEAR
     finished = False
     while not finished:
@@ -17,8 +15,6 @@ def fetch_all_semesters():
                 if not result:
                     finished = True
                 else:
-                    semesters.append(parse_semester(result))
+                    yield parse_semester(result)
 
         year += 1
-
-    return semesters
