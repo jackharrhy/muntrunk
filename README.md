@@ -8,9 +8,9 @@
 
 _this is currently a work in progress!_
 
-currently, its only built to parse the current semester, obv. that's no good :)
+(all semesters in this context is years 2000+)
 
-- `app.py` - flask app to serve w2020 semester as json to the _world_
-- `dump_json.py` - dump entire w2020 semester as json to file
-- `populate_db.py` - dump entire w2020 semester to a postgresql database
+- `app.py` - flask app to serve all semesters as json to the _world_
+- `dump_json.py` - dump all semesters as json to stdin
+- `populate_db.py` - dump all semesters to a postgresql database
 - `muntrunk/` - the _brains_
