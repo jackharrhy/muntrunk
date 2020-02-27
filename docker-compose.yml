@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - network
+    ports:
+      - "127.0.0.1:5432:5432"
+    env_file:
+      - ./.env
+
+  pgql:
+    image: jackharrhy/pgql
+    build:
+      context: ./pgql
+    networks:
+      - network
+    command: ["--connection", "${DATABASE_URL}", "--port", "5443", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter"]
+    ports:
+      - "127.0.0.1:5443:5443"
+
+networks:
+  network:
+
+volumes:
+  db:
