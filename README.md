@@ -2,8 +2,6 @@
 
 **because self-service is a _pain_**
 
-![](https://github.com/jackharrhy/muntrunk/workflows/Deploy%20to%20Dockerhub/badge.svg)
-
 ----
 
 _this is currently a work in progress!_
