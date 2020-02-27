@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from muntrunk.db import Semester, Course, Section, Slot, session
 from muntrunk.data import fetch_all_semesters
 from muntrunk.utils import without_keys

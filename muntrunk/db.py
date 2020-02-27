@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, create_engine
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
@@ -53,9 +54,7 @@ class Slot(Base):
     room = Column(String)
 
 
-engine = create_engine(
-    "postgresql://postgres:superGoodPassword@localhost:5432/muntrunk"
-)
+engine = create_engine(os.getenv("HOST_DATABASE_URL"))
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
