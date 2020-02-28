@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-. ./.env
+. ../.env
 psql "$POSTGRES_HOST_DATABASE_URL" < dump.pgsql
