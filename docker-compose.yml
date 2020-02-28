@@ -10,16 +10,14 @@ services:
       - network
     ports:
       - "127.0.0.1:5432:5432"
-    env_file:
-      - ./.env
 
   pgql:
-    image: jackharrhy/pgql
+    image: jackharrhy/muntrunk-pgql
     build:
       context: ./pgql
     networks:
       - network
-    command: ["--connection", "${DATABASE_URL}", "--port", "5443", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter"]
+    command: ["--connection", "${PGQL_DATABASE_URL}", "--port", "5443", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter"]
     ports:
       - "127.0.0.1:5443:5443"
 

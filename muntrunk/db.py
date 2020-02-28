@@ -54,7 +54,7 @@ class Slot(Base):
     room = Column(String)
 
 
-engine = create_engine(os.getenv("HOST_DATABASE_URL"))
+engine = create_engine(os.getenv("POSTGRES_HOST_DATABASE_URL"))
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
