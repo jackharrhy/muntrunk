@@ -1,0 +1,5 @@
+localhost:2015
+
+reverse_proxy /graphql* localhost:5443
+reverse_proxy /graphiql* localhost:5443
+reverse_proxy /* localhost:3000

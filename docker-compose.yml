@@ -10,6 +10,8 @@ services:
       - network
     ports:
       - "127.0.0.1:5432:5432"
+    env_file:
+      - ./.env
 
   pgql:
     image: jackharrhy/muntrunk-pgql
@@ -20,6 +22,8 @@ services:
     command: ["--connection", "${PGQL_DATABASE_URL}", "--port", "5443", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter"]
     ports:
       - "127.0.0.1:5443:5443"
+    env_file:
+      - ./.env
 
 networks:
   network:
