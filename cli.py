@@ -6,7 +6,7 @@ import logging
 import click
 from muntrunk.types import Semester, common_types
 from muntrunk.data import fetch_all_semesters, fetch_semester
-from muntrunk.db import Semester, Course, Section, Slot, session, engine
+from muntrunk.db import Building, Room, Instructor, Campus, Semester, Course, Section, Slot, session, engine, common_db_types
 from muntrunk.utils import without_keys
 
 logging.basicConfig(level=logging.DEBUG)
