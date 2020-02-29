@@ -8,7 +8,7 @@ Base = declarative_base()
 
 
 class Semester(Base):
-    __tablename__ = "semesters"
+    __tablename__ = "semester"
     id = Column(Integer, primary_key=True)
     year = Column(Integer)
     term = Column(Integer)
@@ -16,9 +16,9 @@ class Semester(Base):
 
 
 class Course(Base):
-    __tablename__ = "courses"
+    __tablename__ = "course"
     id = Column(Integer, primary_key=True)
-    semester_id = Column(Integer, ForeignKey("semesters.id"))
+    semester_id = Column(Integer, ForeignKey("semester.id"))
     semester = relationship("Semester")
     campus = Column(String)
     session = Column(String)
@@ -28,9 +28,9 @@ class Course(Base):
 
 
 class Section(Base):
-    __tablename__ = "sections"
+    __tablename__ = "section"
     id = Column(Integer, primary_key=True)
-    course_id = Column(Integer, ForeignKey("courses.id"))
+    course_id = Column(Integer, ForeignKey("course.id"))
     course = relationship("Course")
     crn = Column(Integer)
     primary_instructor = Column(String)
@@ -43,9 +43,9 @@ class Section(Base):
 
 
 class Slot(Base):
-    __tablename__ = "slots"
+    __tablename__ = "slot"
     id = Column(Integer, primary_key=True)
-    section_id = Column(Integer, ForeignKey("sections.id"))
+    section_id = Column(Integer, ForeignKey("section.id"))
     section = relationship("Section")
     days_of_week = Column(ARRAY(String))
     begin = Column(Integer)
