@@ -3,8 +3,7 @@ from pydantic import BaseModel
 from typing import Any, List, Optional
 
 
-@dataclass
-class CommonTypes:
+class CommonTypes(BaseModel):
     campuses: dict
     instructors: dict
     buildings: dict
