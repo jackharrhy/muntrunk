@@ -1,7 +1,13 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import logging
 import click
 from muntrunk.types import Semester, common_types
 from muntrunk.data import fetch_all_semesters, fetch_semester
+from muntrunk.db import Semester, Course, Section, Slot, session, engine
+from muntrunk.utils import without_keys
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -9,6 +15,43 @@ logging.basicConfig(level=logging.DEBUG)
 @click.group()
 def cli():
     pass
+
+
+@cli.command()
+def db_populate_all():
+    all_semesters = list(fetch_all_semesters)
+
+    for semester in fetch_all_semesters():
+        sql_semester = Semester(**without_keys(semester.dict(), ["courses"]))
+
+        for course in semester.courses:
+            sql_course = Course(**without_keys(course.dict(), ["sections"]))
+            sql_course.semester = sql_semester
+
+            for section in course.sections:
+                sql_section = Section(**without_keys(section.dict(), ["slots"]))
+                sql_section.course = sql_course
+
+                for slot in section.slots:
+                    sql_slot = Slot(**slot.dict())
+                    sql_slot.section = sql_section
+                    session.add(sql_slot)
+
+                session.add(sql_section)
+
+            session.add(sql_course)
+
+        session.add(sql_semester)
+
+    session.commit()
+    session.close()
+
+
+@cli.command()
+def db_drop_all():
+    with engine.connect() as con:
+        con.execute('DROP SCHEMA public CASCADE')
+        con.execute('CREATE SCHEMA public')
 
 
 @cli.command()
