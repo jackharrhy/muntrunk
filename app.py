@@ -7,8 +7,10 @@ from flask import Flask, jsonify
 
 logging.disable(logging.DEBUG)
 
+
 class SemesterList(BaseModel):
     __root__: List[Semester]
+
 
 semester_list = SemesterList(__root__=[])
 

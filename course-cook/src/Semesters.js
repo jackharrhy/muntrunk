@@ -14,7 +14,7 @@ import {makeStyles} from '@material-ui/core/styles';
 const useStyles = makeStyles(theme => ({
   formControl: {
     margin: theme.spacing(1),
-    minWidth: 120,
+    width: '100%',
   },
 }));
 
@@ -47,6 +47,7 @@ export default function Semesters() {
     <FormControl className={classes.formControl}>
       <InputLabel id="Semester-select-label">Semester</InputLabel>
       <Select
+        className={classes.select}
         native
         labelId="Semester-select-label"
         value={semesterId}

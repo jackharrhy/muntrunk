@@ -1,9 +1,12 @@
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from muntrunk.db import Semester, Course, Section, Slot, session
 from muntrunk.data import fetch_all_semesters
 from muntrunk.utils import without_keys
+
+all_semesters = list(fetch_all_semesters)
 
 for semester in fetch_all_semesters():
     sql_semester = Semester(**without_keys(semester.dict(), ["courses"]))

@@ -3,27 +3,102 @@ from pydantic import BaseModel
 from typing import Any, List, Optional
 
 
+@dataclass
+class CommonTypes:
+    campuses: dict
+    instructors: dict
+    buildings: dict
+    rooms: dict
+
+
+common_types = CommonTypes(campuses={}, instructors={}, buildings={}, rooms={},)
+
+
+class Building(BaseModel):
+    letter: str
+
+    def grab(letter):
+        if not letter:
+            return None
+
+        if not letter in common_types.buildings:
+            new_building = Building(letter=letter)
+            common_types.buildings[letter] = new_building
+            return new_building
+        else:
+            return common_types.buildings[letter]
+
+
+class Room(BaseModel):
+    building: Building
+    number: str
+
+    def grab(building, number):
+        if not building:
+            return None
+
+        if not number in common_types.rooms:
+            new_room = Room(building=building, number=number)
+            common_types.rooms[number] = new_room
+            return new_room
+        else:
+            return common_types.rooms[number]
+
+
+class Instructor(BaseModel):
+    name: str
+
+    def grab(name):
+        if not name:
+            return None
+
+        if not name in common_types.instructors:
+            new_instructor = Instructor(name=name)
+            common_types.instructors[name] = new_instructor
+            return new_instructor
+        else:
+            return common_types.instructors[name]
+
+
+class Campus(BaseModel):
+    name: str
+
+    def grab(name):
+        if not name:
+            return None
+
+        if not name in common_types.campuses:
+            new_campus = Campus(name=name)
+            common_types.campuses[name] = new_campus
+            return new_campus
+        else:
+            return common_types.campuses[name]
+
+
 class Slot(BaseModel):
     days_of_week: List[str]
     begin: Optional[int]
     end: Optional[int]
-    building: Optional[str]
-    room: Optional[str]
+    building: Optional[Building]
+    room: Optional[Room]
 
     def from_piece(piece):
+        building = Building.grab(piece["room"]["building"])
+        room = Room.grab(building, piece["room"]["room"])
+
         return Slot(
             days_of_week=piece["days"],
             begin=piece["begin"],
             end=piece["end"],
-            building=piece["room"]["building"],
-            room=piece["room"]["room"],
+            building=building,
+            room=room,
         )
 
 
 class Section(BaseModel):
     crn: int
-    primary_instructor: Optional[str]
-    secondary_instructor: Optional[str]
+    primary_instructor: Optional[Instructor]
+    secondary_instructor: Optional[Instructor]
     wait_list: bool
     pre_check: bool
     schedule_type: Optional[str]
@@ -32,10 +107,13 @@ class Section(BaseModel):
     slots: List[Slot]
 
     def from_piece(piece):
+        primary_instructor = Instructor.grab(piece["instructor"]["primary"])
+        secondary_instructor = Instructor.grab(piece["instructor"]["secondary"])
+
         return Section(
             crn=piece["crn"],
-            primary_instructor=piece["instructor"]["primary"],
-            secondary_instructor=piece["instructor"]["secondary"],
+            primary_instructor=primary_instructor,
+            secondary_instructor=secondary_instructor,
             wait_list=piece["waitList"],
             pre_check=piece["preCheck"],
             schedule_type=piece["schedType"],
@@ -46,7 +124,7 @@ class Section(BaseModel):
 
 
 class Course(BaseModel):
-    campus: str
+    campus: Campus
     session: str
     subject: str
     number: str
@@ -54,8 +132,10 @@ class Course(BaseModel):
     sections: List[Section]
 
     def from_piece(piece):
+        campus = Campus.grab(piece["campus"])
+
         return Course(
-            campus=piece["campus"],
+            campus=campus,
             session=piece["session"],
             subject=piece["course"]["subject"],
             number=piece["course"]["number"],
