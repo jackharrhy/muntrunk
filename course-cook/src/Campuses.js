@@ -8,6 +8,7 @@ import {
   MenuItem,
   Checkbox,
   ListItemText,
+  Button,
 } from '@material-ui/core';
 import {
   Alert,
@@ -39,18 +40,17 @@ export default function Campuses({campusIds, setCampusIds}) {
 
   const nodes = data.allCampuses.nodes;
 
-  const handleChange = (event) => {
-    setCampusIds(event.target.value);
-  };
+  const handleChange = (event) => setCampusIds(event.target.value);
+  const handleSelectAll = () => setCampusIds(nodes.map((campus) => campus.id));
+  const renderValue = (selected) => selected.map((id) => nodes.find(({id: campusId}) => campusId === id).name).join(', ');
 
   return (
     <FormControl className={classes.formControl}>
       <InputLabel id="Campuses-select-label">Campuses</InputLabel>
       <Select
-        className={classes.select}
         multiple
         labelId="Campuses-select-label"
-        renderValue={(selected) => selected.map((id) => nodes[id-1].name).join(', ')}
+        renderValue={renderValue}
         value={campusIds}
         onChange={handleChange}
       >
@@ -64,6 +64,12 @@ export default function Campuses({campusIds, setCampusIds}) {
           </MenuItem>
         ))}
       </Select>
+      <Button
+        variant="contained"
+        onClick={handleSelectAll}
+      >
+        Select all
+      </Button>
     </FormControl>
   )
 }
