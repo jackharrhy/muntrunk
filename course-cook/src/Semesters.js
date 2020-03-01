@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {useQuery} from 'graphql-hooks'
 import {
   CircularProgress,
@@ -29,13 +29,12 @@ const SEMESTER_QUERY = `query {
   }
 }`;
 
-export default function Semesters() {
+export default function Semesters({semesterId, setSemesterId}) {
   const classes = useStyles();
   const {loading, error, data} = useQuery(SEMESTER_QUERY);
-  const [semesterId, setSemesterId] = useState('');
 
   if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">Someting went wrong!</Alert>
+  if (error) return <Alert severity="error">Someting went wrong loading semesters!</Alert>
 
   const nodes = data.allSemesters.nodes;
 
