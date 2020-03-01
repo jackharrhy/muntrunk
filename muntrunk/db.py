@@ -7,8 +7,9 @@ from sqlalchemy.orm import sessionmaker, relationship
 
 Base = declarative_base()
 
+
 @dataclass
-class CommonDBTypes():
+class CommonDBTypes:
     campuses: dict
     instructors: dict
     buildings: dict
@@ -74,9 +75,13 @@ class Section(Base):
     course = relationship("Course", foreign_keys=[course_id])
     crn = Column(Integer)
     primary_instructor_id = Column(Integer, ForeignKey("instructor.id"))
-    primary_instructor = relationship("Instructor", foreign_keys=[primary_instructor_id])
+    primary_instructor = relationship(
+        "Instructor", foreign_keys=[primary_instructor_id]
+    )
     secondary_instructor_id = Column(Integer, ForeignKey("instructor.id"))
-    secondary_instructor = relationship("Instructor", foreign_keys=[secondary_instructor_id])
+    secondary_instructor = relationship(
+        "Instructor", foreign_keys=[secondary_instructor_id]
+    )
     wait_list = Column(Boolean)
     pre_check = Column(Boolean)
     schedule_type = Column(String)

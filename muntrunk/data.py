@@ -15,7 +15,7 @@ def fetch_semester(year, term, level):
     result = fetch_banner(year, term, level)
 
     if not result:
-        finished = True
+        return None
     else:
         return parse_semester(result, year, term, level)
 
@@ -27,6 +27,13 @@ def fetch_all_semesters():
     while not finished:
         for term in range(1, 3):
             for level in range(1, 3):
-                semester_list.__root__.append(fetch_semester(year, term, level))
+                should_be_semester = fetch_semester(year, term, level)
+
+                if not should_be_semester:
+                    finished = True
+                else:
+                    semester_list.__root__.append(should_be_semester)
+
         year += 1
+
     return semester_list

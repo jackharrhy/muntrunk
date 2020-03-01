@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pydantic import BaseModel
-from typing import Any, List, Optional
+from typing import Any, List, Optional, ForwardRef
+
+Campus = ForwardRef("Campus")
 
 
 class CommonTypes(BaseModel):
@@ -15,17 +17,20 @@ common_types = CommonTypes(campuses={}, instructors={}, buildings={}, rooms={},)
 
 class Building(BaseModel):
     letter: str
+    campus: Campus
 
-    def grab(letter):
+    def grab(letter, campus_name):
         if not letter:
             return None
 
+        key = f"{campus_name}_{letter}"
+
         if not letter in common_types.buildings:
-            new_building = Building(letter=letter)
-            common_types.buildings[letter] = new_building
+            new_building = Building(letter=letter, campus=Campus.grab(campus_name))
+            common_types.buildings[key] = new_building
             return new_building
         else:
-            return common_types.buildings[letter]
+            return common_types.buildings[key]
 
 
 class Room(BaseModel):
@@ -36,12 +41,14 @@ class Room(BaseModel):
         if not building:
             return None
 
+        key = f"{building.campus.name}_{building.letter}_{number}"
+
         if not number in common_types.rooms:
             new_room = Room(building=building, number=number)
-            common_types.rooms[number] = new_room
+            common_types.rooms[key] = new_room
             return new_room
         else:
-            return common_types.rooms[number]
+            return common_types.rooms[key]
 
 
 class Instructor(BaseModel):
@@ -82,7 +89,7 @@ class Slot(BaseModel):
     room: Optional[Room]
 
     def from_piece(piece):
-        building = Building.grab(piece["room"]["building"])
+        building = Building.grab(piece["room"]["building"], piece["campus"])
         room = Room.grab(building, piece["room"]["room"])
 
         return Slot(
@@ -148,6 +155,10 @@ class Semester(BaseModel):
     term: int
     level: int
     courses: List[Course]
+
+
+Campus.update_forward_refs()
+Building.update_forward_refs()
 
 
 @dataclass
