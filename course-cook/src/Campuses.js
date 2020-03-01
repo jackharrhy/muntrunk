@@ -14,9 +14,9 @@ import {
 } from '@material-ui/lab';
 import {makeStyles} from '@material-ui/core/styles';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   formControl: {
-    margin: theme.spacing(1),
+    marginTop: theme.spacing(3),
     width: '100%',
   },
 }));
@@ -50,7 +50,7 @@ export default function Campuses({campusIds, setCampusIds}) {
         className={classes.select}
         multiple
         labelId="Campuses-select-label"
-        renderValue={(selected) => selected.join(', ')}
+        renderValue={(selected) => selected.map((id) => nodes[id-1].name).join(', ')}
         value={campusIds}
         onChange={handleChange}
       >

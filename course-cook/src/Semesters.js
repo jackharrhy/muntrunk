@@ -4,16 +4,17 @@ import {
   CircularProgress,
   Select,
   InputLabel,
-  FormControl
+  FormControl,
+  MenuItem,
 } from '@material-ui/core';
 import {
   Alert,
 } from '@material-ui/lab';
 import {makeStyles} from '@material-ui/core/styles';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   formControl: {
-    margin: theme.spacing(1),
+    marginTop: theme.spacing(3),
     width: '100%',
   },
 }));
@@ -47,19 +48,17 @@ export default function Semesters({semesterId, setSemesterId}) {
       <InputLabel id="Semester-select-label">Semester</InputLabel>
       <Select
         className={classes.select}
-        native
         labelId="Semester-select-label"
         value={semesterId}
         onChange={handleChange}
       >
-        <option value="" />
         {nodes.map(({id, year, term, level}) => (
-          <option
+          <MenuItem
             key={id}
             value={id}
           >
             {`${year}-${year+1} ${term === 1 ? 'Fall' : 'Winter'} (${level === 1 ? 'Undergrad' : 'Graduate'})`}
-          </option>
+          </MenuItem>
         ))}
       </Select>
     </FormControl>
