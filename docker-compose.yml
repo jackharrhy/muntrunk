@@ -19,11 +19,18 @@ services:
       context: ./pgql
     networks:
       - network
-    command: ["--connection", "${PGQL_DATABASE_URL}", "--port", "5443", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter", "--disable-default-mutations"]
+    command: ["--connection", "${PGQL_DATABASE_URL}", "--port", "5443", "--schema", "public", "--append-plugins", "postgraphile-plugin-connection-filter", "--disable-default-mutations", "-i", "/muntrunk/graphiql", "-q", "/muntrunk/graphql"]
     ports:
       - "127.0.0.1:5443:5443"
     env_file:
       - ./.env
+
+  coursecook:
+    image: jackharrhy/coursecook
+    build:
+      context: ./course-cook
+    ports:
+      - "127.0.0.1:3000:80"
 
 networks:
   network:

@@ -6,7 +6,7 @@ import Campuses from './Campuses';
 import Courses from './Courses';
 
 const client = new GraphQLClient({
-  url: '/graphql'
+  url: process.env.REACT_APP_GRAPHQL_ENDPOINT,
 })
 
 export default function App() {
