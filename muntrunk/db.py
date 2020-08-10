@@ -66,6 +66,7 @@ class Course(Base):
     subject = Column(String)
     number = Column(String)
     name = Column(String)
+    meta = Column(ARRAY(String))
 
 
 class Section(Base):
@@ -85,8 +86,10 @@ class Section(Base):
     wait_list = Column(Boolean)
     pre_check = Column(Boolean)
     schedule_type = Column(String)
+    lab_sections = Column(ARRAY(Integer))
     credit_hours = Column(Integer)
     billed_hours = Column(Integer)
+    meta = Column(ARRAY(String))
 
 
 class Slot(Base):
@@ -101,6 +104,7 @@ class Slot(Base):
     building = relationship("Building", foreign_keys=[building_id])
     room_id = Column(Integer, ForeignKey("room.id"))
     room = relationship("Room", foreign_keys=[room_id])
+    meta = Column(ARRAY(String))
 
 
 engine = create_engine(os.getenv("POSTGRES_HOST_DATABASE_URL"))

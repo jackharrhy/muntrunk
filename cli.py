@@ -120,8 +120,8 @@ def db_drop_all():
 
 
 @cli.command()
-@click.option("--year", default=2019)
-@click.option("--term", default=2)
+@click.option("--year", default=2020)
+@click.option("--term", default=1)
 @click.option("--level", default=1)
 @click.option("--onlytypes", default=False)
 def jsondump_semester(year, term, level, onlytypes):

@@ -87,6 +87,7 @@ class Slot(BaseModel):
     end: Optional[int]
     building: Optional[Building]
     room: Optional[Room]
+    meta: List[str]
 
     def from_piece(piece):
         building = Building.grab(piece["room"]["building"], piece["campus"])
@@ -98,6 +99,7 @@ class Slot(BaseModel):
             end=piece["end"],
             building=building,
             room=room,
+            meta=[],
         )
 
 
@@ -108,9 +110,11 @@ class Section(BaseModel):
     wait_list: bool
     pre_check: bool
     schedule_type: Optional[str]
+    lab_sections: List[int]
     credit_hours: int
     billed_hours: Optional[int]
     slots: List[Slot]
+    meta: List[str]
 
     def from_piece(piece):
         primary_instructor = Instructor.grab(piece["instructor"]["primary"])
@@ -123,9 +127,11 @@ class Section(BaseModel):
             wait_list=piece["waitList"],
             pre_check=piece["preCheck"],
             schedule_type=piece["schedType"],
+            lab_sections=piece["labSections"],
             credit_hours=piece["creditHours"],
             billed_hours=piece["billHours"],
             slots=[],
+            meta=[],
         )
 
 
@@ -136,6 +142,7 @@ class Course(BaseModel):
     number: str
     name: Optional[str]
     sections: List[Section]
+    meta: List[str]
 
     def from_piece(piece):
         campus = Campus.grab(piece["campus"])
@@ -147,6 +154,7 @@ class Course(BaseModel):
             number=piece["course"]["number"],
             name=piece["course"]["name"],
             sections=[],
+            meta=[]
         )
 
 
