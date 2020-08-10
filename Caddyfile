@@ -1,5 +1,9 @@
-localhost:2015
+localhost:2015 {
+  route /muntrunk* {
+    reverse_proxy localhost:5443
+  }
 
-reverse_proxy /muntrunk/graphql* localhost:5443
-reverse_proxy /muntrunk/graphiql* localhost:5443
-reverse_proxy /coursecook/* localhost:3000
+  route /coursecook* {
+    reverse_proxy localhost:3000
+  }
+}

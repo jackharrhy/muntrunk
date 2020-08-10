@@ -10,7 +10,7 @@ const client = new GraphQLClient({
 })
 
 export default function App() {
-  const [semesterId, setSemesterId] = useState(79);
+  const [semesterId, setSemesterId] = useState(81);
   const [campusIds, setCampusIds] = useState([1]);
 
   return (
