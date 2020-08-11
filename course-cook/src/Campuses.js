@@ -19,8 +19,6 @@ const converter = (data) => {
 export default function Campuses({campusIds, setCampusIds}) {
   const {loading, error, data} = useQuery(CAMPUS_QUERY);
 
-  console.log(campusIds)
-
   if (loading) return <p>loading</p>
   if (error) return <p>Someting went wrong loading semesters!</p>
 
