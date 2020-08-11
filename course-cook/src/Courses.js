@@ -1,23 +1,9 @@
 import React from 'react';
 import {useQuery} from 'graphql-hooks'
-import {
-  Box,
-  Paper,
-  Typography,
-  CircularProgress,
-} from '@material-ui/core';
-import {
-  Alert,
-} from '@material-ui/lab';
-import {makeStyles} from '@material-ui/core/styles';
+import {Text, Box} from 'grommet';
 
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(3),
-  },
-}));
-
-const COURSES_QUERY = `query($semesterId : Int, $campusIds : [Int!]) {
+const COURSES_QUERY = `
+query($semesterId : Int, $campusIds : [Int!]) {
   allCourses(
     filter: {
       semesterId: {equalTo: $semesterId}
@@ -31,24 +17,20 @@ const COURSES_QUERY = `query($semesterId : Int, $campusIds : [Int!]) {
       name
     }
   }
-}`;
+}
+`;
 
 export default function Courses({semesterId, campusIds}) {
-  const classes = useStyles();
   const {loading, error, data} = useQuery(COURSES_QUERY, {variables: {semesterId, campusIds}});
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">Someting went wrong loading courses!</Alert>
+  if (loading) return <p>loading</p>
+  if (error) return <p>Someting went wrong loading semesters!</p>
 
   const nodes = data.allCourses.nodes;
 
-  return (
-    <Paper className={classes.paper}>
-      <Box p={3}>
-        {nodes.map(({id, subject, number, name}) => (
-          <Typography key={id}>{`${id} - ${subject} ${number} ${name}`}</Typography>
-        ))}
-      </Box>
-    </Paper>
-  )
+  return nodes.map(({id, subject, number, name}) => (
+    <Box key={id} margin="small">
+      <Text>{`${id} - ${subject} ${number} ${name}`}</Text>
+    </Box>
+  ));
 }

@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "homepage": "https://jackharrhy.dev/coursecook",
   "dependencies": {
-    "@material-ui/core": "^4.9.4",
-    "@material-ui/lab": "^4.0.0-alpha.44",
-    "graphql-hooks": "^4.4.3",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
-    "react-scripts": "3.4.0"
+    "graphql-hooks": "^4.5.0",
+    "grommet": "^2.14.0",
+    "grommet-icons": "^4.4.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "3.4.1",
+    "styled-components": "^5.1.1"
   },
   "scripts": {
     "start": "react-scripts start",

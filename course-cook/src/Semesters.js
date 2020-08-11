@@ -1,25 +1,9 @@
 import React from 'react';
+import {Select} from 'grommet';
 import {useQuery} from 'graphql-hooks'
-import {
-  CircularProgress,
-  Select,
-  InputLabel,
-  FormControl,
-  MenuItem,
-} from '@material-ui/core';
-import {
-  Alert,
-} from '@material-ui/lab';
-import {makeStyles} from '@material-ui/core/styles';
 
-const useStyles = makeStyles((theme) => ({
-  formControl: {
-    marginTop: theme.spacing(3),
-    width: '100%',
-  },
-}));
-
-const SEMESTER_QUERY = `query {
+const SEMESTER_QUERY = `
+query {
   allSemesters(orderBy: ID_DESC) {
     nodes {
       id
@@ -28,39 +12,33 @@ const SEMESTER_QUERY = `query {
       level
     }
   }
-}`;
+}
+`;
 
-export default function Semesters({semesterId, setSemesterId}) {
-  const classes = useStyles();
-  const {loading, error, data} = useQuery(SEMESTER_QUERY);
-
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">Someting went wrong loading semesters!</Alert>
-
+const converter = (data) => {
   const nodes = data.allSemesters.nodes;
 
-  const handleChange = (event) => {
-    setSemesterId(event.target.value);
-  };
+  return nodes.map((node) => {
+    const {year, term, level} = node;
+    node.label = `${year}-${year+1} ${term === 1 ? 'Fall' : 'Winter'} (${level === 1 ? 'Undergrad' : 'Graduate'})`;
+    return node;
+  });
+};
 
-  return (
-    <FormControl className={classes.formControl}>
-      <InputLabel id="Semester-select-label">Semester</InputLabel>
-      <Select
-        className={classes.select}
-        labelId="Semester-select-label"
-        value={semesterId}
-        onChange={handleChange}
-      >
-        {nodes.map(({id, year, term, level}) => (
-          <MenuItem
-            key={id}
-            value={id}
-          >
-            {`${year}-${year+1} ${term === 1 ? 'Fall' : 'Winter'} (${level === 1 ? 'Undergrad' : 'Graduate'})`}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  )
+export default function Semesters({semesterId, setSemesterId}) {
+  const {loading, error, data} = useQuery(SEMESTER_QUERY);
+
+  if (loading) return <p>loading</p>
+  if (error) return <p>Someting went wrong loading semesters!</p>
+
+  const options = converter(data);
+
+  return <Select
+    size="medium"
+    value={semesterId}
+    valueKey={{key: 'id', reduce: true}}
+    options={options}
+    labelKey="label"
+    onChange={({value}) => setSemesterId(value)}
+  />
 }
