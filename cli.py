@@ -1,9 +1,10 @@
 from dotenv import load_dotenv
 
-load_dotenv()
-
 import logging
 import click
+
+load_dotenv()
+
 from muntrunk.types import Semester, common_types
 from muntrunk.data import fetch_all_semesters, fetch_semester
 from muntrunk.db import (
@@ -12,6 +13,8 @@ from muntrunk.db import (
     Instructor,
     Campus,
     Semester,
+    Session,
+    Subject,
     Course,
     Section,
     Slot,
@@ -39,9 +42,13 @@ def db_populate_semester(semester, session):
     session.add(sql_semester)
 
     for course in semester.courses:
-        course_stripped = without_keys(course.dict(), ["campus", "sections"])
+        course_stripped = without_keys(
+            course.dict(), ["sections", "campus", "session", "subject"]
+        )
         sql_course = Course(**course_stripped)
         sql_course.campus = common_db_types.campuses[course.campus.name]
+        sql_course.session = common_db_types.sessions[course.session.name]
+        sql_course.subject = common_db_types.subjects[course.subject.name]
         sql_course.semester = sql_semester
         session.add(sql_course)
 
@@ -105,15 +112,30 @@ def db_populate_all():
             **common_types.instructors[instructor_name].dict()
         )
 
+    logger.debug("generating sessions")
+    for session_name in common_types.sessions:
+        common_db_types.sessions[session_name] = Session(
+            **common_types.sessions[session_name].dict()
+        )
+
+    logger.debug("generating subjects")
+    for subject_name in common_types.subjects:
+        common_db_types.subjects[subject_name] = Subject(
+            **common_types.subjects[subject_name].dict()
+        )
+
     for semester in all_semesters:
         db_populate_semester(semester, session)
 
+    logger.debug("finished population, comitting...")
     session.commit()
+    logger.debug("closing session")
     session.close()
 
 
 @cli.command()
 def db_drop_all():
+    logger.debug("dropping all")
     with engine.connect() as con:
         con.execute("DROP SCHEMA public CASCADE")
         con.execute("CREATE SCHEMA public")

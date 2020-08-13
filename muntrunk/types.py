@@ -10,9 +10,13 @@ class CommonTypes(BaseModel):
     instructors: dict
     buildings: dict
     rooms: dict
+    sessions: dict
+    subjects: dict
 
 
-common_types = CommonTypes(campuses={}, instructors={}, buildings={}, rooms={},)
+common_types = CommonTypes(
+    campuses={}, instructors={}, buildings={}, rooms={}, sessions={}, subjects={},
+)
 
 
 class Building(BaseModel):
@@ -81,6 +85,36 @@ class Campus(BaseModel):
             return common_types.campuses[name]
 
 
+class Session(BaseModel):
+    name: str
+
+    def grab(name):
+        if not name:
+            return None
+
+        if not name in common_types.sessions:
+            new_session = Session(name=name)
+            common_types.sessions[name] = new_session
+            return new_session
+        else:
+            return common_types.sessions[name]
+
+
+class Subject(BaseModel):
+    name: str
+
+    def grab(name):
+        if not name:
+            return None
+
+        if not name in common_types.subjects:
+            new_subject = Subject(name=name)
+            common_types.subjects[name] = new_subject
+            return new_subject
+        else:
+            return common_types.subjects[name]
+
+
 class Slot(BaseModel):
     days_of_week: List[str]
     begin: Optional[int]
@@ -137,8 +171,8 @@ class Section(BaseModel):
 
 class Course(BaseModel):
     campus: Campus
-    session: str
-    subject: str
+    session: Session
+    subject: Subject
     number: str
     name: Optional[str]
     sections: List[Section]
@@ -146,15 +180,17 @@ class Course(BaseModel):
 
     def from_piece(piece):
         campus = Campus.grab(piece["campus"])
+        session = Session.grab(piece["session"])
+        subject = Subject.grab(piece["course"]["subject"])
 
         return Course(
             campus=campus,
-            session=piece["session"],
-            subject=piece["course"]["subject"],
+            session=session,
+            subject=subject,
             number=piece["course"]["number"],
             name=piece["course"]["name"],
             sections=[],
-            meta=[]
+            meta=[],
         )
 
 

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "homepage": "https://jackharrhy.dev/coursecook",
   "dependencies": {
+    "debug": "^4.1.1",
     "graphql-hooks": "^4.5.0",
     "grommet": "^2.14.0",
     "grommet-icons": "^4.4.0",

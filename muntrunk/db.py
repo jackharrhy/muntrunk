@@ -14,9 +14,13 @@ class CommonDBTypes:
     instructors: dict
     buildings: dict
     rooms: dict
+    sessions: dict
+    subjects: dict
 
 
-common_db_types = CommonDBTypes(campuses={}, instructors={}, buildings={}, rooms={},)
+common_db_types = CommonDBTypes(
+    campuses={}, instructors={}, buildings={}, rooms={}, sessions={}, subjects={},
+)
 
 
 class Building(Base):
@@ -55,6 +59,18 @@ class Semester(Base):
     level = Column(Integer)
 
 
+class Session(Base):
+    __tablename__ = "session"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
+class Subject(Base):
+    __tablename__ = "subject"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
 class Course(Base):
     __tablename__ = "course"
     id = Column(Integer, primary_key=True)
@@ -62,8 +78,10 @@ class Course(Base):
     semester = relationship("Semester", foreign_keys=[semester_id])
     campus_id = Column(Integer, ForeignKey("campus.id"))
     campus = relationship("Campus", foreign_keys=[campus_id])
-    session = Column(String)
-    subject = Column(String)
+    session_id = Column(Integer, ForeignKey("session.id"))
+    session = relationship("Session", foreign_keys=[session_id])
+    subject_id = Column(Integer, ForeignKey("subject.id"))
+    subject = relationship("Subject", foreign_keys=[subject_id])
     number = Column(String)
     name = Column(String)
     meta = Column(ARRAY(String))
@@ -110,5 +128,5 @@ class Slot(Base):
 engine = create_engine(os.getenv("POSTGRES_HOST_DATABASE_URL"))
 Base.metadata.create_all(engine)
 
-Session = sessionmaker(bind=engine)
-session = Session()
+SqlSession = sessionmaker(bind=engine)
+session = SqlSession()
