@@ -1,0 +1,465 @@
+{
+  "version": 2,
+  "tables": [
+    {
+      "table": {
+        "schema": "public",
+        "name": "building"
+      },
+      "object_relationships": [
+        {
+          "name": "campus",
+          "using": {
+            "foreign_key_constraint_on": "campus_id"
+          }
+        }
+      ],
+      "array_relationships": [
+        {
+          "name": "rooms",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "building_id",
+              "table": {
+                "schema": "public",
+                "name": "room"
+              }
+            }
+          }
+        },
+        {
+          "name": "slots",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "building_id",
+              "table": {
+                "schema": "public",
+                "name": "slot"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "letter",
+              "campus_id"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "campus"
+      },
+      "array_relationships": [
+        {
+          "name": "buildings",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "campus_id",
+              "table": {
+                "schema": "public",
+                "name": "building"
+              }
+            }
+          }
+        },
+        {
+          "name": "courses",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "campus_id",
+              "table": {
+                "schema": "public",
+                "name": "course"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "name"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "course"
+      },
+      "object_relationships": [
+        {
+          "name": "campus",
+          "using": {
+            "foreign_key_constraint_on": "campus_id"
+          }
+        },
+        {
+          "name": "semester",
+          "using": {
+            "foreign_key_constraint_on": "semester_id"
+          }
+        },
+        {
+          "name": "session",
+          "using": {
+            "foreign_key_constraint_on": "session_id"
+          }
+        },
+        {
+          "name": "subject",
+          "using": {
+            "foreign_key_constraint_on": "subject_id"
+          }
+        }
+      ],
+      "array_relationships": [
+        {
+          "name": "sections",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "course_id",
+              "table": {
+                "schema": "public",
+                "name": "section"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "semester_id",
+              "campus_id",
+              "session_id",
+              "subject_id",
+              "number",
+              "name",
+              "meta"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "instructor"
+      },
+      "array_relationships": [
+        {
+          "name": "sections_as_primary_instructor",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "primary_instructor_id",
+              "table": {
+                "schema": "public",
+                "name": "section"
+              }
+            }
+          }
+        },
+        {
+          "name": "sections_as_secondary_instructor",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "secondary_instructor_id",
+              "table": {
+                "schema": "public",
+                "name": "section"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "name"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "room"
+      },
+      "object_relationships": [
+        {
+          "name": "building",
+          "using": {
+            "foreign_key_constraint_on": "building_id"
+          }
+        }
+      ],
+      "array_relationships": [
+        {
+          "name": "slots",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "room_id",
+              "table": {
+                "schema": "public",
+                "name": "slot"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "number",
+              "building_id"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "section"
+      },
+      "object_relationships": [
+        {
+          "name": "course",
+          "using": {
+            "foreign_key_constraint_on": "course_id"
+          }
+        },
+        {
+          "name": "primary_instructor",
+          "using": {
+            "foreign_key_constraint_on": "primary_instructor_id"
+          }
+        },
+        {
+          "name": "secondary_instructor",
+          "using": {
+            "foreign_key_constraint_on": "secondary_instructor_id"
+          }
+        }
+      ],
+      "array_relationships": [
+        {
+          "name": "slots",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "section_id",
+              "table": {
+                "schema": "public",
+                "name": "slot"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "course_id",
+              "crn",
+              "primary_instructor_id",
+              "secondary_instructor_id",
+              "wait_list",
+              "pre_check",
+              "schedule_type",
+              "lab_sections",
+              "credit_hours",
+              "billed_hours",
+              "meta"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "semester"
+      },
+      "array_relationships": [
+        {
+          "name": "courses",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "semester_id",
+              "table": {
+                "schema": "public",
+                "name": "course"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "year",
+              "term",
+              "level"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "session"
+      },
+      "array_relationships": [
+        {
+          "name": "courses",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "session_id",
+              "table": {
+                "schema": "public",
+                "name": "course"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "name"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "slot"
+      },
+      "object_relationships": [
+        {
+          "name": "building",
+          "using": {
+            "foreign_key_constraint_on": "building_id"
+          }
+        },
+        {
+          "name": "room",
+          "using": {
+            "foreign_key_constraint_on": "room_id"
+          }
+        },
+        {
+          "name": "section",
+          "using": {
+            "foreign_key_constraint_on": "section_id"
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "section_id",
+              "days_of_week",
+              "begin",
+              "end",
+              "building_id",
+              "room_id",
+              "meta"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "subject"
+      },
+      "array_relationships": [
+        {
+          "name": "courses",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "subject_id",
+              "table": {
+                "schema": "public",
+                "name": "course"
+              }
+            }
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "anonymous",
+          "permission": {
+            "columns": [
+              "id",
+              "name"
+            ],
+            "filter": {},
+            "allow_aggregations": true
+          }
+        }
+      ]
+    }
+  ]
+}

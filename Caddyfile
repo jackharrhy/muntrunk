@@ -1,9 +1,8 @@
-localhost:2015 {
-  route /muntrunk* {
-    reverse_proxy localhost:5443
+http://localhost:2015 {
+  redir /v1/graphql /v1/graphql/
+  route /v1/graphql/ {
+    reverse_proxy localhost:8080
   }
 
-  route /coursecook* {
-    reverse_proxy localhost:3000
-  }
+  reverse_proxy localhost:3000
 }

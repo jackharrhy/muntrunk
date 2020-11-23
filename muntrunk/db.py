@@ -1,11 +1,22 @@
 import os
+import logging
+
 from dataclasses import dataclass
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, create_engine
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
+logger = logging.getLogger(__name__)
+
 Base = declarative_base()
+
+
+def db_drop_all():
+    logger.debug("dropping all")
+    with engine.connect() as con:
+        con.execute("DROP SCHEMA public CASCADE")
+        con.execute("CREATE SCHEMA public")
 
 
 @dataclass
@@ -125,8 +136,14 @@ class Slot(Base):
     meta = Column(ARRAY(String))
 
 
-engine = create_engine(os.getenv("POSTGRES_HOST_DATABASE_URL"))
-Base.metadata.create_all(engine)
+engine = create_engine(os.getenv("HASURA_GRAPHQL_DATABASE_URL"))
+
+
+def init_tables():
+    Base.metadata.create_all(engine)
+
+
+init_tables()
 
 SqlSession = sessionmaker(bind=engine)
 session = SqlSession()
