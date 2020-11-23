@@ -7,7 +7,7 @@ import os
 import time
 import atexit
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import requests
 
 from muntrunk.db import init_tables, db_drop_all
@@ -18,12 +18,13 @@ from apscheduler.schedulers.background import BackgroundScheduler
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./course-cook/dist/', static_url_path='/')
 
 HASURA_GRAPHQL_URI = os.getenv("HASURA_GRAPHQL_URI")
 HASURA_ADMIN_SECRET = os.getenv("HASURA_GRAPHQL_ADMIN_SECRET")
+HASURA_ADMIN_SECRET_HEADER = "X-Hasura-Admin-Secret"
 HASURA_HEADERS = headers = {
-    "X-Hasura-Admin-Secret": HASURA_ADMIN_SECRET,
+    HASURA_ADMIN_SECRET_HEADER: HASURA_ADMIN_SECRET,
 }
 
 with open("./hasura-metadata.json", "r") as file:
@@ -73,6 +74,11 @@ def check_if_refreshing():
 
 @app.route("/manual-refresh")
 def manual_refresh():
+    secret = request.headers.get(HASURA_ADMIN_SECRET_HEADER)
+
+    if secret != HASURA_ADMIN_SECRET:
+        return f"Invalid {HASURA_ADMIN_SECRET_HEADER} Header", 403
+
     global is_refreshing
 
     if is_refreshing:
@@ -82,6 +88,9 @@ def manual_refresh():
 
     return "", 204
 
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=refresh, trigger="interval", hours=24)

@@ -4,5 +4,5 @@ http://localhost:2015 {
     reverse_proxy localhost:8080
   }
 
-  reverse_proxy localhost:3000
+  reverse_proxy localhost:5000
 }
