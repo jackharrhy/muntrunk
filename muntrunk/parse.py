@@ -51,6 +51,7 @@ class Piece(dict):
         begin: bool = True
         end: bool = True
         schedule: bool = True
+        lab_sections: bool = True
 
     def default_parser(self, field):
         field = field.strip()
@@ -106,6 +107,32 @@ class Piece(dict):
         else:
             self.valid.schedule = False
 
+    def lab_sections_parser(self, field):
+        field = field.strip()
+
+        if field == "":
+            if self:
+                self.valid.lab_section = False
+            return []
+
+        lab_sections = []
+
+        pieces = field.split(" ")
+        for value in pieces:
+            if len(value) != 3:
+                if self:
+                    self.valid.lab_section = False
+                return []
+
+            try:
+                lab_sections.append(int(value))
+            except ValueError:
+                if self:
+                    self.valid.lab_section = False
+                return []
+
+        return lab_sections
+
     def bool_parser(self, field):
         field = field.strip()
         if field == "":
@@ -127,7 +154,7 @@ class Piece(dict):
 
         if len(fields) == 0:
             self.valid.days_of_the_week = False
-            return None
+            return []
 
         for field in fields:
             if not field in Piece.valid_days_of_the_week:
@@ -212,7 +239,7 @@ class Piece(dict):
         6: FieldParser("end", "end_parser"),
         7: FieldParser("room", "room_parser"),
         8: FieldParser("schedType", "schedule_parser"),
-        9: FieldParser("labSection"),
+        9: FieldParser("labSections", "lab_sections_parser"),
         10: FieldParser("phone", "ignore_parser"),
         11: FieldParser("waitList", "bool_parser"),
         12: FieldParser("preCheck", "bool_parser"),
@@ -272,12 +299,7 @@ class Piece(dict):
 def parse_semester(response, year, term, level):
     soup = BeautifulSoup(response.text, "html.parser")
 
-    semester = Semester(
-        year=year,
-        term=term,
-        level=level,
-        courses=[]
-    )
+    semester = Semester(year=year, term=term, level=level, courses=[])
 
     pre = soup.body.pre.text
 
@@ -348,25 +370,53 @@ def parse_semester(response, year, term, level):
 
                 might_by_empty = remaining_data[:15].strip()
 
+                meta = []
+
                 if might_by_empty == "":
-                    # TODO handle MAJOR MINOR tags
+                    # TODO handle major / minor meta
+
+                    potential_lab_sections = Piece.lab_sections_parser(
+                        None, remaining_data[50:].strip()
+                    )
+                    if len(potential_lab_sections) > 0:
+                        types.section.lab_sections.extend(potential_lab_sections)
+
                     continue
 
-                if remaining_data.startswith("RESERVED  FOR: "):
-                    pass
-                    # TODO handle meta
-                elif remaining_data.startswith("CROSS LISTED: "):
-                    pass
-                    # TODO handle meta
-                elif remaining_data.startswith("AVAILABLE  TO: "):
-                    pass
-                    # TODO handle meta
-                elif remaining_data.startswith("NOT AVAILABLE TO: "):
-                    pass
-                    # TODO handle meta
+                reserved_for = "RESERVED  FOR:"
+                cross_listed = "CROSS LISTED:"
+                available_to = "AVAILABLE  TO:"
+                not_available_to = "NOT AVAILABLE TO:"
+
+                remaining_data = remaining_data.strip()
+
+                if remaining_data.startswith(reserved_for):
+                    meta.append(
+                        f"Reserved For: {remaining_data[len(reserved_for):].strip()}"
+                    )
+                elif remaining_data.startswith(cross_listed):
+                    meta.append(
+                        f"Cross-listed: {remaining_data[len(cross_listed):].strip()}"
+                    )
+                elif remaining_data.startswith(available_to):
+                    meta.append(
+                        f"Available To: {remaining_data[len(available_to):].strip()}"
+                    )
+                elif remaining_data.startswith(not_available_to):
+                    meta.append(
+                        f"Not Available To: {remaining_data[len(not_available_to):].strip()}"
+                    )
                 else:
-                    pass
-                    # TODO handle context-less meta
+                    meta.append(remaining_data)
+
+                if types.section:
+                    types.section.meta.append(meta)
+                elif types.slot:
+                    types.slot.meta.append(meta)
+                elif types.course:
+                    types.course.meta.append(meta)
+                else:
+                    raise Exception("No slot to put meta into!")
 
         if last_course:
             semester.courses.append(last_course)

@@ -1,0 +1,8 @@
+http://localhost:2015 {
+  redir /v1/graphql /v1/graphql/
+  route /v1/graphql/ {
+    reverse_proxy localhost:8080
+  }
+
+  reverse_proxy localhost:3000
+}

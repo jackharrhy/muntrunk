@@ -1,5 +1,6 @@
 import shelve
 import logging
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -47,7 +48,7 @@ def fetch_banner(year, term, level):
     if year > 2030:  # spam prevent, sometime in the future fix this :)
         exit(1)
 
-    with shelve.open("persist") as db:
+    with shelve.open("fetch_banner") as db:
         if not key in db:
             logger.debug(f"fetch_banner - actually fetching data...")
             entire_resp = actually_fetch_banner(year, term, level)
