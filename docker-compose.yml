@@ -6,8 +6,6 @@ services:
     build: ./.
     ports:
       - 127.0.0.1:8000:80
-    volumes:
-      - ./uwsgi.ini:/app/uwsgi.ini
     env_file:
       - ./.env
 

@@ -20,6 +20,7 @@ COPY ./muntrunk /app/muntrunk/
 COPY ./app.py /app/main.py
 COPY ./requirements.txt /app
 COPY ./hasura-metadata.json /app/hasura-metadata.json
+COPY ./uwsgi.ini /app/uwsgi.ini
 
 RUN apk update && \
   apk add postgresql-libs && \
