@@ -1,6 +1,16 @@
-version: '3'
+version: "3"
 
 services:
+  muntrunk:
+    image: jackharrhy/muntrunk
+    build: ./.
+    ports:
+      - 127.0.0.1:8000:80
+    volumes:
+      - ./uwsgi.ini:/app/uwsgi.ini
+    env_file:
+      - ./.env
+
   postgres:
     image: postgres:13
     volumes:
@@ -14,7 +24,5 @@ services:
     image: hasura/graphql-engine:v1.3.2
     env_file:
       - ./.env
-    network_mode: "host"
-
 volumes:
   db:

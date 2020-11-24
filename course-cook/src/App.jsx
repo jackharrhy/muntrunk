@@ -1,16 +1,16 @@
-import React from 'react'
-import { createClient, Provider } from 'urql';
+import React from "react";
+import { createClient, Provider } from "urql";
 
-import Routes from './Routes';
+import Routes from "./Routes";
 
-const client = createClient({ url: '/v1/graphql/' });
+const client = createClient({ url: "/v1/graphql/" });
 
 function App() {
-	return (
+  return (
     <Provider value={client}>
       <Routes />
     </Provider>
-	);
+  );
 }
 
 export default App;

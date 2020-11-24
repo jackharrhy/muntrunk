@@ -1,26 +1,28 @@
-import React, {useState} from "react";
-import { Pane, Text } from 'evergreen-ui'
+import React, { useState } from "react";
 
 import Semesters from "../components/Semesters";
+import Subjects from "../components/Subjects";
+import Courses from "../components/Courses";
 
 function Home() {
   const [semesterId, setSemesterId] = useState("");
+  const [subjectId, setSubjectId] = useState("");
 
-	return (
-    <Pane
-      margin="1rem"
-      padding="1rem"
-      display="flex"
-      border="default"
-      flexDirection="column"
-    >
-      <Text>Select Semester</Text>
-      <Semesters
-        semesterId={semesterId}
-        setSemesterId={setSemesterId}
-      />
-    </Pane>
-	);
+  return (
+    <div>
+      <div id="filters">
+        <Semesters semesterId={semesterId} setSemesterId={setSemesterId} />
+        <Subjects subjectId={subjectId} setSubjectId={setSubjectId} />
+      </div>
+      <div id="courses">
+        {(semesterId !== "" && subjectId !== "") ? (
+          <Courses semesterId={semesterId} subjectId={subjectId} />
+        ) : (
+          <p id="no-filters">^ Select some filters above ^</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default Home;

@@ -44,11 +44,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "letter",
-              "campus_id"
-            ],
+            "columns": ["id", "letter", "campus_id"],
             "filter": {},
             "allow_aggregations": true
           }
@@ -90,10 +86,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "name"
-            ],
+            "columns": ["id", "name"],
             "filter": {},
             "allow_aggregations": true
           }
@@ -200,10 +193,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "name"
-            ],
+            "columns": ["id", "name"],
             "filter": {},
             "allow_aggregations": true
           }
@@ -241,11 +231,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "number",
-              "building_id"
-            ],
+            "columns": ["id", "number", "building_id"],
             "filter": {},
             "allow_aggregations": true
           }
@@ -338,12 +324,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "year",
-              "term",
-              "level"
-            ],
+            "columns": ["id", "year", "term", "level"],
             "filter": {},
             "allow_aggregations": true
           }
@@ -373,10 +354,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "name"
-            ],
+            "columns": ["id", "name"],
             "filter": {},
             "allow_aggregations": true
           }
@@ -451,10 +429,7 @@
         {
           "role": "anonymous",
           "permission": {
-            "columns": [
-              "id",
-              "name"
-            ],
+            "columns": ["id", "name"],
             "filter": {},
             "allow_aggregations": true
           }

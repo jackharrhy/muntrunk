@@ -1,5 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxygen+Mono&display=swap');
+
 body {
   margin: 0;
+}
+
+* {
+  font-family: 'Oxygen Mono', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+select {
+  margin: 0.5rem;
+}
+
+#filters {
+  margin: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#courses {
+  margin: 0 3rem 2rem 3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.course {
+  display: flex;
+  align-items: center;
+  margin: 0.2rem 0;
+}
+
+.course .name {
+  margin-left: 1rem;
+}
+
+.course .expanded {
+  width: 100%;
+}
+
+.course button {
+  padding: 0;
+}
+
+.course p {
+  margin: 0.1rem 0;
+}
+
+.section {
+  margin: 1rem 0 1rem 1rem;
+}
+
+.section p {
+  margin: 0;
+}
+
+.section .meta {
+  font-size: 0.7rem;
+}
+
+.slot {
+  margin: 0 0 0 1rem;
+}
+
+.slot p {
+  margin: 0;
+}
+
+#no-filters {
+  text-align: center;
 }
