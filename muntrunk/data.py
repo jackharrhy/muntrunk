@@ -10,7 +10,15 @@ from .scrape import fetch_banner
 
 logger = logging.getLogger(__name__)
 
-INITIAL_YEAR = 2000
+# BIG MASSIVE TODO
+# if the initial year is 2000, this uses up
+# too much ram on my VPS and kills it before
+# it populate an entire db full of data
+# so for now, just start at 2019, and then
+# at a later date make this more memory
+# efficent, and put it back on 2000
+
+INITIAL_YEAR = 2019 # 2000
 
 
 class SemesterList(BaseModel):
